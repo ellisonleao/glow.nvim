@@ -72,7 +72,7 @@ local function validate(path)
   path = string.gsub(path, "%s+", "")
   print(path)
 
-  if path == "." then
+  if path == "" then
     path = vim.api.nvim_exec("echo expand('%:p')", true)
   else
     path = vim.api.nvim_exec("echo expand('" .. path .. "')", true)
