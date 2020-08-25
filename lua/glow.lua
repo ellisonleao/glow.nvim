@@ -2,30 +2,12 @@ local api = vim.api
 local win, buf
 local M = {}
 
--- title sets the window title
--- local function title(str)
---   local width = api.nvim_win_get_width(0)
---   local text_pos = math.floor(width / 2) - math.floor(string.len(str) / 2)
---   return string.rep(" ", text_pos) .. str
--- end
-
--- glow grabs glow command results
-local function get_glow_output()
-  -- need to check if glow command exists
-  local content = api.nvim_buf_get_lines(1, 0, api.nvim_buf_line_count(1), false)
-
-  -- call glow with current content
-
-  return content
-end
-
 -- open_window draws a custom window with the markdown contents
-local function open_window()
+local function open_window(path)
   buf = api.nvim_create_buf(false, true)
   local border_buf = api.nvim_create_buf(false, true)
 
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-  -- api.nvim_buf_set_option(buf, 'filetype', 'markdown')
 
   local width = api.nvim_get_option("columns")
   local height = api.nvim_get_option("lines")
@@ -62,13 +44,12 @@ local function open_window()
   table.insert(border_lines, '╚' .. string.rep('═', win_width) .. '╝')
   api.nvim_buf_set_lines(border_buf, 0, -1, false, border_lines)
   api.nvim_open_win(border_buf, true, border_opts)
-  api.nvim_command('au BufWipeout <buffer> exe "silent bwipeout! "' .. border_buf)
+  -- api.nvim_command('au BufWipeout <buffer> exe "silent bwipeout! "' .. border_buf)
 
   -- main floating window buffer
-  local result = get_glow_output()
   win = api.nvim_open_win(buf, true, opts)
   api.nvim_buf_set_option(buf, "modifiable", true)
-  api.nvim_buf_set_lines(buf, 0, -1, false, result)
+  api.nvim_exec("terminal glow " .. path, false)
   api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
@@ -86,21 +67,42 @@ local function close_window()
   vim.cmd("bd")
 end
 
-local function validate()
-  assert(vim.bo[0].filetype == "markdown", "file must be markdown")
+local function validate(path)
+  -- trim path
+  path = string.gsub(path, "%s+", "")
+  print(path)
+
+  if path == "." then
+    path = vim.api.nvim_exec("echo expand('%:p')", true)
+  else
+    path = vim.api.nvim_exec("echo expand('" .. path .. "')", true)
+  end
+
+  -- check if file exists
+  local ok, _, code = os.rename(path, path)
+  if not ok then
+    if code == 13 then
+      -- Permission denied, but it exists
+      return true
+    end
+    error("file does not exists")
+  end
+
+  return ok
 end
 
-local function dowload_glow()
-  -- TODO:
+local function download_glow()
+  vim.cmd("!go get github.com/charmbracelet/glow")
 end
 
 -- exporting functions
-M.glow = function()
-  validate()
-  open_window()
+M.glow = function(file)
+  validate(file)
+  open_window(file)
   set_mappings()
 end
 
 M.close_window = close_window
+M.download_glow = download_glow
 
 return M
