@@ -1,14 +1,9 @@
-if exists('g:loaded_glow')
+" prevent loading file twice
+if exists("g:loaded_glow")
   finish
-endif " prevent loading file twice
+endif
 
-let s:save_cpo = &cpo
-set cpo&vim
-
-command! -nargs=? Glow :lua require('glow').glow("<args>")
-command! GlowInstall :lua require('glow').download_glow()
-
-let &cpo = s:save_cpo
-unlet s:save_cpo
+command! -nargs=? Glow :lua require("glow").glow("<args>")
+command! GlowInstall :lua require("glow").download_glow()
 
 let g:loaded_glow = 1
