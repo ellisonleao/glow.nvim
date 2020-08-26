@@ -101,9 +101,7 @@ local function open_window(path)
 
   -- set local options
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-  api.nvim_command("setlocal winblend=0")
-  api.nvim_command("setlocal modifiable")
-  api.nvim_command("setlocal autochdir")
+  api.nvim_win_set_option(win, "winblend", 0)
   vim.fn.termopen(string.format("glow %s", path))
 end
 
