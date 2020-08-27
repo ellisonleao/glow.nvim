@@ -49,7 +49,14 @@ local function validate(path)
 end
 
 local function download_glow()
-  vim.cmd("silent !go get github.com/charmbracelet/glow")
+  if not vim.fn.executable("go") then
+    error("golang not installed. Please provide it first")
+  end
+
+  if vim.fn.executable("glow") then
+    return
+  end
+  vim.fn.system("go get github.com/charmbracelet/glow")
   print("glow installed!")
 end
 
