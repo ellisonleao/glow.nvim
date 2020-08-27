@@ -21,9 +21,9 @@ Plug 'npxbr/glow.nvim', {'do': ':GlowInstall'}
 You can also create a mapping getting a preview of the current file
 
 ```viml
-nnoremap <leader>p :Glow<CR>
+nmap <leader>p :Glow<CR>
 ```
 
 ## Screenshot
 
-![](https://i.postimg.cc/L5cBB0tm/Screenshot-from-2020-08-26-01-50-31.png)
+[![glow.nvim](https://i.postimg.cc/y6GX34Mq/glow.gif)](https://postimg.cc/4nzhjM4w)

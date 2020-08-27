@@ -22,7 +22,6 @@ local function close_term_buffers()
       end
     end
   end
-
 end
 
 local function close_window()
@@ -34,19 +33,19 @@ local function validate(path)
   -- trim and get the full path
   path = string.gsub(path, "%s+", "")
   path = path == "" and "%" or path
-  path = vim.fn.expand(path)
+  path = vim.fn.fnamemodify(vim.fn.expand(path), ":p")
 
   -- check if file exists
   local ok, _, code = os.rename(path, path)
   if not ok then
     if code == 13 then
       -- Permission denied, but it exists
-      return true
+      return path
     end
     error("file does not exists")
   end
 
-  return ok
+  return path
 end
 
 local function download_glow()
@@ -66,23 +65,26 @@ local function open_window(path)
   local col = math.ceil((width - win_width) / 2)
 
   -- BORDERS
-  -- local border_buf = api.nvim_create_buf(false, true)
-  -- local border_opts = {
-  --   style = "minimal";
-  --   relative = "editor";
-  --   width = win_width + 2;
-  --   height = win_height + 2;
-  --   row = row - 1;
-  --   col = col - 1;
-  -- }
-  -- local border_lines = {'╔' .. string.rep('═', win_width) .. '╗'}
-  -- local middle_line = '║' .. string.rep(' ', win_width) .. '║'
-  -- for _ = 1, win_height do
-  --   table.insert(border_lines, middle_line)
-  -- end
-  -- table.insert(border_lines, '╚' .. string.rep('═', win_width) .. '╝')
-  -- api.nvim_buf_set_lines(border_buf, 0, -1, false, border_lines)
-  -- api.nvim_open_win(border_buf, true, border_opts)
+  local border_buf = api.nvim_create_buf(false, true)
+  local title = vim.fn.fnamemodify(path, ":.")
+  local border_opts = {
+    style = "minimal";
+    relative = "editor";
+    width = win_width + 2;
+    height = win_height + 2;
+    row = row - 1;
+    col = col - 1;
+  }
+  local border_lines = {
+    '┌' .. title .. string.rep('─', win_width - #title) .. '┐';
+  }
+  local middle_line = '│' .. string.rep(' ', win_width) .. '│'
+  for _ = 1, win_height do
+    table.insert(border_lines, middle_line)
+  end
+  table.insert(border_lines, '└' .. string.rep('─', win_width) .. '┘')
+  api.nvim_buf_set_lines(border_buf, 0, -1, false, border_lines)
+  api.nvim_open_win(border_buf, true, border_opts)
 
   local opts = {
     style = "minimal";
@@ -95,9 +97,8 @@ local function open_window(path)
 
   -- create preview buffer and set local options
   buf = api.nvim_create_buf(false, true)
-
-  -- main floating window buffer
   win = api.nvim_open_win(buf, true, opts)
+  api.nvim_command("au BufWipeout <buffer> exe 'silent bwipeout! '" .. border_buf)
 
   -- set local options
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
@@ -108,8 +109,8 @@ end
 -- exporting functions
 local M = {
   glow = function(file)
-    validate(file)
-    open_window(file)
+    local path = validate(file)
+    open_window(path)
     set_mappings()
   end;
   close_window = close_window;
