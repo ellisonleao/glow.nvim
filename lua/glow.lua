@@ -10,23 +10,8 @@ local function set_mappings()
   end
 end
 
-local function close_term_buffers()
-  local range = vim.fn.range
-  local bufnr = vim.fn.bufnr
-
-  for _, v in ipairs(range(1, bufnr("$"))) do
-    if vim.api.nvim_buf_is_loaded(v) then
-      local buftype = vim.api.nvim_buf_get_option(v, "buftype")
-      if buftype == "terminal" then
-        api.nvim_command("bd! " .. v)
-      end
-    end
-  end
-end
-
 local function close_window()
   api.nvim_win_close(win, true)
-  close_term_buffers()
 end
 
 local function validate(path)
