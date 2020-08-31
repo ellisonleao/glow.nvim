@@ -18,7 +18,8 @@ local function validate(path)
   -- trim and get the full path
   path = string.gsub(path, "%s+", "")
   path = path == "" and "%" or path
-  path = vim.fn.fnamemodify(vim.fn.expand(path), ":p")
+  path = api.nvim_call_function("expand", {path})
+  path = api.nvim_call_function("fnamemodify", {path; ":p"})
 
   -- check if file exists
   local ok, _, code = os.rename(path, path)
@@ -34,14 +35,14 @@ local function validate(path)
 end
 
 local function download_glow()
-  if not vim.fn.executable("go") then
+  if not api.nvim_call_function("executable", {"go"}) then
     error("golang not installed. Please provide it first")
   end
 
-  if vim.fn.executable("glow") then
+  if api.nvim_call_function("executable", {"glow"}) then
     return
   end
-  vim.fn.system("go get github.com/charmbracelet/glow")
+  api.nvim_call_function("system", {"go get github.com/charmbracelet/glow"})
   print("glow installed!")
 end
 
@@ -58,7 +59,7 @@ local function open_window(path)
 
   -- BORDERS
   local border_buf = api.nvim_create_buf(false, true)
-  local title = vim.fn.fnamemodify(path, ":.")
+  local title = api.nvim_call_function("fnamemodify", {path; ":."})
   local border_opts = {
     style = "minimal";
     relative = "editor";
@@ -95,7 +96,7 @@ local function open_window(path)
   -- set local options
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
   api.nvim_win_set_option(win, "winblend", 0)
-  vim.fn.termopen(string.format("glow %s", path))
+  api.nvim_call_function("termopen", {string.format("glow %s", path)})
 end
 
 -- exporting functions
