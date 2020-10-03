@@ -96,7 +96,7 @@ local function open_window(path)
   -- set local options
   api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
   api.nvim_win_set_option(win, "winblend", 0)
-  api.nvim_call_function("termopen", {string.format("glow %s", path)})
+  api.nvim_call_function("termopen", {string.format("glow '%s'", path)})
 end
 
 -- exporting functions
