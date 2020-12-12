@@ -3,7 +3,6 @@ if exists("g:loaded_glow")
   finish
 endif
 
-command! -nargs=? Glow :lua require("glow").glow("<args>")
-command! GlowInstall :lua require("glow").download_glow()
+lua require("glow").create_commands()
 
 let g:loaded_glow = 1

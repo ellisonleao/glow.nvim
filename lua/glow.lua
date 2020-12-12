@@ -1,26 +1,19 @@
 local api = vim.api
 local win, buf
-
-local function set_mappings()
-  local mappings = {q = 'close_window()'}
-
-  for key, val in pairs(mappings) do
-    api.nvim_buf_set_keymap(buf, "n", key, ":lua require('glow')." .. val .. "<cr>",
-                            {nowait = true; noremap = true; silent = true})
-  end
-end
-
-local function close_window()
-  api.nvim_win_close(win, true)
-end
+local M = {}
 
 local function validate(path)
+  if vim.fn.executable("glow") == 0 then
+    api.nvim_err_writeln("glow is not installed. Call :GlowInstall to install it")
+    return
+  end
+
   -- trim and get the full path
   path = string.gsub(path, "%s+", "")
+  path = string.gsub(path, "\"", "")
   path = path == "" and "%" or path
-  path = api.nvim_call_function("expand", {path})
-  path = api.nvim_call_function("fnamemodify", {path; ":p"})
-
+  path = vim.fn.expand(path)
+  path = vim.fn.fnamemodify(path, ":p")
   -- check if file exists
   local ok, _, code = os.rename(path, path)
   if not ok then
@@ -28,24 +21,65 @@ local function validate(path)
       -- Permission denied, but it exists
       return path
     end
-    error("file does not exists")
+    api.nvim_err_writeln("file does not exists")
+    return
+  end
+
+  local ext = vim.fn.fnamemodify(path, ":e")
+  if ext ~= "md" then
+    api.nvim_err_writeln("glow only support markdown files")
+    return
   end
 
   return path
 end
 
-local function download_glow()
-  if not api.nvim_call_function("executable", {"go"}) then
-    error("golang not installed. Please provide it first")
-  end
-
-  if api.nvim_call_function("executable", {"glow"}) then
-    return
-  end
-  api.nvim_call_function("system", {"go get github.com/charmbracelet/glow"})
-  print("glow installed!")
+local function call_go_command()
+  local cmd = {"go", "get", "-u", "github.com/charmbracelet/glow"}
+  vim.fn.jobstart(cmd, {
+    on_exit = function(_, d, _)
+      if d == 0 then
+        api.nvim_out_write("latest glow installed")
+        return
+      end
+      api.nvim_err_writeln("failed to install glow")
+    end,
+  })
 end
 
+function M.close_window()
+  api.nvim_win_close(win, true)
+end
+
+function M.create_commands()
+  vim.cmd("command! -nargs=? Glow :lua require('glow').glow('<f-args>')")
+  vim.cmd("command! GlowInstall :lua require('glow').download_glow()")
+end
+
+function M.download_glow()
+  if not vim.fn.executable("go") == 0 then
+    api.nvim_err_writeln("golang not installed. Please provide it first")
+  end
+
+  if vim.fn.executable("glow") == 1 then
+    local answer = vim.fn.input(
+                     "latest glow already installed, do you want update? Y/n = ")
+    answer = string.lower(answer)
+    while answer ~= "y" and answer ~= "n" do
+      answer = vim.fn.input("please answer Y or n = ")
+      answer = string.lower(answer)
+    end
+
+    if answer == "n" then
+      api.nvim_out_write("\n")
+      return
+    end
+    api.nvim_out_write("updating glow..\n")
+  else
+    print("installing glow..")
+  end
+  call_go_command()
+end
 -- open_window draws a custom window with the markdown contents
 local function open_window(path)
 
@@ -59,17 +93,17 @@ local function open_window(path)
 
   -- BORDERS
   local border_buf = api.nvim_create_buf(false, true)
-  local title = api.nvim_call_function("fnamemodify", {path; ":."})
+  local title = vim.fn.fnamemodify(path, ":.")
   local border_opts = {
-    style = "minimal";
-    relative = "editor";
-    width = win_width + 2;
-    height = win_height + 2;
-    row = row - 1;
-    col = col - 1;
+    style = "minimal",
+    relative = "editor",
+    width = win_width + 2,
+    height = win_height + 2,
+    row = row - 1,
+    col = col - 1,
   }
   local border_lines = {
-    '┌' .. title .. string.rep('─', win_width - #title) .. '┐';
+    '┌' .. title .. string.rep('─', win_width - #title) .. '┐',
   }
   local middle_line = '│' .. string.rep(' ', win_width) .. '│'
   for _ = 1, win_height do
@@ -80,34 +114,33 @@ local function open_window(path)
   api.nvim_open_win(border_buf, true, border_opts)
 
   local opts = {
-    style = "minimal";
-    relative = "editor";
-    width = win_width;
-    height = win_height;
-    row = row;
-    col = col;
+    style = "minimal",
+    relative = "editor",
+    width = win_width,
+    height = win_height,
+    row = row,
+    col = col,
   }
 
   -- create preview buffer and set local options
   buf = api.nvim_create_buf(false, true)
   win = api.nvim_open_win(buf, true, opts)
   api.nvim_command("au BufWipeout <buffer> exe 'silent bwipeout! '" .. border_buf)
+  api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
+                          {noremap = true, silent = true})
 
   -- set local options
-  api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+  api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_win_set_option(win, "winblend", 0)
-  api.nvim_call_function("termopen", {string.format("glow %s", path)})
+  vim.fn.termopen(string.format("glow %s", path))
 end
 
--- exporting functions
-local M = {
-  glow = function(file)
-    local path = validate(file)
-    open_window(path)
-    set_mappings()
-  end;
-  close_window = close_window;
-  download_glow = download_glow;
-}
+function M.glow(file)
+  local path = validate(file)
+  if path == nil then
+    return
+  end
+  open_window(path)
+end
 
 return M

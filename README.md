@@ -5,6 +5,8 @@ A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim 
 
 ## Installing
 
+**NOTE: This plugin requires Neovim 0.5 versions**
+
 ```
 Plug 'npxbr/glow.nvim', {'do': ':GlowInstall'}
 ```
