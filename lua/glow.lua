@@ -132,7 +132,7 @@ local function open_window(path)
   -- set local options
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_win_set_option(win, "winblend", 0)
-  vim.fn.termopen(string.format("glow %s", vim.fn.shellescape(path))
+  vim.fn.termopen(string.format("glow %s", vim.fn.shellescape(path)))
 end
 
 function M.glow(file)
