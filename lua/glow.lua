@@ -128,6 +128,8 @@ local function open_window(path)
   api.nvim_command("au BufWipeout <buffer> exe 'silent bwipeout! '" .. border_buf)
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
+  api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
+                          {noremap = true, silent = true})
 
   -- set local options
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
