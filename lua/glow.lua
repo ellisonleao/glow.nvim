@@ -35,7 +35,7 @@ local function validate(path)
 end
 
 local function call_go_command()
-  local cmd = {"go", "get", "-u", "github.com/charmbracelet/glow"}
+  local cmd = {"go", "get", "github.com/charmbracelet/glow"}
   vim.fn.jobstart(cmd, {
     on_exit = function(_, d, _)
       if d == 0 then
