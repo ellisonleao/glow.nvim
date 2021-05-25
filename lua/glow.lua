@@ -35,16 +35,26 @@ local function validate(path)
 end
 
 local function call_go_command()
-  local cmd = {"go", "get", "-u", "github.com/charmbracelet/glow"}
-  vim.fn.jobstart(cmd, {
-    on_exit = function(_, d, _)
-      if d == 0 then
-        api.nvim_out_write("latest glow installed")
-        return
-      end
-      api.nvim_err_writeln("failed to install glow")
-    end,
-  })
+  local script = [[
+    version="1.4.1"
+    os=$(uname -s | tr "[:upper:]" "[:lower:]")
+    arch=$(uname -i)
+    filename="glow_${version}_${os}_${arch}.tar.gz"
+    url="https://github.com/charmbracelet/glow/releases/download/v1.4.1/${filename}"
+
+    [ -f "$GOPATH/bin/glow" ] && rm "$GOPATH/bin/glow"
+    [ -f glow.tar.gz ] && rm glow.tar.gz
+
+    curl -sL -o glow.tar.gz ${url}
+    tar -zxf glow.tar.gz -C "$GOPATH/bin"
+    echo "Glow installed sucessfully!"
+  ]]
+  vim.cmd("new")
+  local shell = vim.o.shell
+  vim.o.shell = '/bin/bash'
+  vim.fn.termopen("set -e\n" .. script)
+  vim.o.shell = shell
+  vim.cmd("startinsert")
 end
 
 function M.close_window()
