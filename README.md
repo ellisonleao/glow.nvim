@@ -1,5 +1,4 @@
-glow.nvim
-=========
+# glow.nvim
 
 A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim buffer.
 
@@ -19,6 +18,7 @@ Plug 'npxbr/glow.nvim', {'do': ':GlowInstall','branch':'main'}
 
 - Pressing `q` will automatically close the window
 - No path arg means glow uses current path in vim
+- `:Glow` command will work as toogle feature, so calling it will open or close the current preview
 
 You can also create a mapping getting a preview of the current file
 

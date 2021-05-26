@@ -148,11 +148,16 @@ local function open_window(path)
 end
 
 function M.glow(file)
-  local path = validate(file)
-  if path == nil then
-    return
+  local current_win = vim.fn.win_getid()
+  if current_win == win then
+    M.close_window()
+  else
+    local path = validate(file)
+    if path == nil then
+      return
+    end
+    open_window(path)
   end
-  open_window(path)
 end
 
 return M
