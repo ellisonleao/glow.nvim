@@ -38,7 +38,8 @@ local function call_go_command()
   local script = [[
     version="1.4.1"
     os=$(uname -s | tr "[:upper:]" "[:lower:]")
-    arch=$(uname -i)
+    arch=$(uname -p)
+    [ -z "$arch" ] || [ "$arch" -eq "unknown" ] && arch="x86_64"
     filename="glow_${version}_${os}_${arch}.tar.gz"
     url="https://github.com/charmbracelet/glow/releases/download/v1.4.1/${filename}"
 
