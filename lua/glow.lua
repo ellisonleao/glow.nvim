@@ -39,7 +39,7 @@ local function call_go_command()
     version="1.4.1"
     os=$(uname -s | tr "[:upper:]" "[:lower:]")
     arch=$(uname -p)
-    [ -z "$arch" ] || [ "$arch" -eq "unknown" ] && arch="x86_64"
+    [ -z "$arch" ] || [ "$arch" == "unknown" ] && arch="x86_64"
     filename="glow_${version}_${os}_${arch}.tar.gz"
     url="https://github.com/charmbracelet/glow/releases/download/v1.4.1/${filename}"
 
@@ -48,6 +48,7 @@ local function call_go_command()
 
     curl -sL -o glow.tar.gz ${url}
     tar -zxf glow.tar.gz -C "$GOPATH/bin"
+    [ -f "glow.tar.gz" ] && rm "glow.tar.gz"
     echo "Glow installed sucessfully!"
   ]]
   vim.cmd("new")
