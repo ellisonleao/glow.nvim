@@ -34,11 +34,15 @@ local function validate(path)
   return path
 end
 
-local function call_go_command()
+local function call_install_script()
   local script = [[
     version="1.4.1"
     os=$(uname -s | tr "[:upper:]" "[:lower:]")
     arch=$(uname -p)
+    # edge case for osx
+    if [ "$os" == "darwin" ]; then
+      os="Darwin"
+    fi
     [ -z "$arch" ] || [ "$arch" == "unknown" ] && arch="x86_64"
     filename="glow_${version}_${os}_${arch}.tar.gz"
     url="https://github.com/charmbracelet/glow/releases/download/v1.4.1/${filename}"
@@ -90,7 +94,7 @@ function M.download_glow()
   else
     print("installing glow..")
   end
-  call_go_command()
+  call_install_script()
 end
 -- open_window draws a custom window with the markdown contents
 local function open_window(path)
