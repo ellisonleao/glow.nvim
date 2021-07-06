@@ -42,6 +42,7 @@ local function call_install_script()
     # edge case for osx
     if [ "$os" == "darwin" ]; then
       os="Darwin"
+      arch=$(uname -m)
     fi
     [ -z "$arch" ] || [ "$arch" == "unknown" ] && arch="x86_64"
     filename="glow_${version}_${os}_${arch}.tar.gz"
