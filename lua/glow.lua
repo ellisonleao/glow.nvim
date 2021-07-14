@@ -14,13 +14,9 @@ local function validate(path)
   path = path == "" and "%" or path
   path = vim.fn.expand(path)
   path = vim.fn.fnamemodify(path, ":p")
+  local file_exists = vim.fn.filereadable(path) == 1 and vim.fn.bufexists(path) == 1
   -- check if file exists
-  local ok, _, code = os.rename(path, path)
-  if not ok then
-    if code == 13 then
-      -- Permission denied, but it exists
-      return path
-    end
+  if not file_exists then
     api.nvim_err_writeln("file does not exists")
     return
   end
@@ -46,7 +42,7 @@ local function call_install_script()
     fi
     [ -z "$arch" ] || [ "$arch" == "unknown" ] && arch="x86_64"
     filename="glow_${version}_${os}_${arch}.tar.gz"
-    url="https://github.com/charmbracelet/glow/releases/download/v1.4.1/${filename}"
+    url="https://github.com/charmbracelet/glow/releases/download/v${version}/${filename}"
 
     [ -f "$GOPATH/bin/glow" ] && rm "$GOPATH/bin/glow"
     [ -f glow.tar.gz ] && rm glow.tar.gz
@@ -66,11 +62,6 @@ end
 
 function M.close_window()
   api.nvim_win_close(win, true)
-end
-
-function M.create_commands()
-  vim.cmd("command! -nargs=? Glow :lua require('glow').glow('<f-args>')")
-  vim.cmd("command! GlowInstall :lua require('glow').download_glow()")
 end
 
 function M.download_glow()
@@ -108,28 +99,6 @@ local function open_window(path)
   local row = math.ceil((height - win_height) / 2 - 1)
   local col = math.ceil((width - win_width) / 2)
 
-  -- BORDERS
-  local border_buf = api.nvim_create_buf(false, true)
-  local title = vim.fn.fnamemodify(path, ":.")
-  local border_opts = {
-    style = "minimal",
-    relative = "editor",
-    width = win_width + 2,
-    height = win_height + 2,
-    row = row - 1,
-    col = col - 1,
-  }
-  local border_lines = {
-    '┌' .. title .. string.rep('─', win_width - #title) .. '┐',
-  }
-  local middle_line = '│' .. string.rep(' ', win_width) .. '│'
-  for _ = 1, win_height do
-    table.insert(border_lines, middle_line)
-  end
-  table.insert(border_lines, '└' .. string.rep('─', win_width) .. '┘')
-  api.nvim_buf_set_lines(border_buf, 0, -1, false, border_lines)
-  api.nvim_open_win(border_buf, true, border_opts)
-
   local opts = {
     style = "minimal",
     relative = "editor",
@@ -137,12 +106,12 @@ local function open_window(path)
     height = win_height,
     row = row,
     col = col,
+    border = "shadow",
   }
 
   -- create preview buffer and set local options
   buf = api.nvim_create_buf(false, true)
   win = api.nvim_open_win(buf, true, opts)
-  api.nvim_command("au BufWipeout <buffer> exe 'silent bwipeout! '" .. border_buf)
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
