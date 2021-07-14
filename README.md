@@ -15,7 +15,7 @@ Plug 'npxbr/glow.nvim', {'do': ':GlowInstall', 'branch': 'main'}
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"~/code/glow.nvim", run = ":GlowInstall"}
+use {"npxbr/glow.nvim", run = "GlowInstall"}
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ use {"~/code/glow.nvim", run = ":GlowInstall"}
 You can also create a mapping getting a preview of the current file
 
 ```viml
-nmap <leader>p :Glow<CR>
+noremap <leader>p :Glow<CR>
 ```
 
 ## Screenshot
