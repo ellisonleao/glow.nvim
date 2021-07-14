@@ -36,4 +36,4 @@ noremap <leader>p :Glow<CR>
 
 ## Screenshot
 
-[![glow.nvim](https://i.postimg.cc/y6GX34Mq/glow.gif)](https://postimg.cc/4nzhjM4w)
+![](https://i.postimg.cc/rynmX2X8/glow.gif)
