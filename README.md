@@ -15,7 +15,7 @@ Plug 'npxbr/glow.nvim', {'do': ':GlowInstall', 'branch': 'main'}
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"npxbr/glow.nvim", run = "GlowInstall"}
+use {"npxbr/glow.nvim", cmd = ":GlowInstall"}
 ```
 
 ## Usage
