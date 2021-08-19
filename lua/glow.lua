@@ -40,10 +40,14 @@ local function call_install_script()
       os="Darwin"
       arch=$(uname -m)
     fi
-    [ -z "$arch" ] || [ "$arch" == "unknown" ] && arch="x86_64"
+    if [ -z "$arch" ] || [ "$arch" == "unknown" ]; then
+      arch=$(uname -m)
+      [ "$arch" == "unknown" ] && arch="x86_64"
+    fi
     filename="glow_${version}_${os}_${arch}.tar.gz"
     url="https://github.com/charmbracelet/glow/releases/download/v${version}/${filename}"
 
+    [ -d "$GOPATH/bin" ] || mkdir -p "$GOPATH/bin"
     [ -f "$GOPATH/bin/glow" ] && rm "$GOPATH/bin/glow"
     [ -f glow.tar.gz ] && rm glow.tar.gz
 
