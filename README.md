@@ -9,13 +9,13 @@ A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim 
 with [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
-Plug 'npxbr/glow.nvim', {'do': ':GlowInstall', 'branch': 'main'}
+Plug 'ellisonleao/glow.nvim', {'do': ':GlowInstall', 'branch': 'main'}
 ```
 
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"npxbr/glow.nvim", run = "GlowInstall"}
+use {"ellisonleao/glow.nvim", run = "GlowInstall"}
 ```
 
 ## Usage
