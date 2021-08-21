@@ -15,7 +15,7 @@ Plug 'ellisonleao/glow.nvim', {'do': ':GlowInstall', 'branch': 'main'}
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"ellisonleao/glow.nvim", run = "GlowInstall"}
+use {"ellisonleao/glow.nvim", run = ":GlowInstall"}
 ```
 
 ## Usage
