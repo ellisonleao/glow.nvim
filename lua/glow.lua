@@ -31,12 +31,12 @@ local function validate(path)
 end
 
 local function has_value(tab, val)
-    for index, value in ipairs(tab) do
-        if value == val then
-            return true
-        end
+  for index, value in ipairs(tab) do
+    if value == val then
+      return true
     end
-    return false
+  end
+  return false
 end
 
 local function install_glow()
