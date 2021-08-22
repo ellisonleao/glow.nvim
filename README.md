@@ -33,6 +33,17 @@ You can also create a mapping getting a preview of the current file
 ```viml
 noremap <leader>p :Glow<CR>
 ```
+For users who want to make glow.nvim buffer fullscreen, there's a native vim keybinding
+
+- `Ctrl-w + |`  set window's width max
+- `Ctrl-w + _` set window's height max
+
+Or you can have a fullscreen option by creating a mapping for setting both window's height and width max at once
+
+```viml
+noremap <C-w>z <C-w>\|<C-w>\_
+```
+
 
 ## Screenshot
 
