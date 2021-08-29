@@ -2,9 +2,12 @@
 
 A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim buffer.
 
-## Installing
+## Prerequisites
 
-**NOTE: This plugin requires Neovim 0.5 versions**
+- Neovim 0.5 or higher
+- Glow binary will be downloaded in to `$HOME/bin` folder. Make sure to add it in `$PATH`
+
+## Installing
 
 with [vim-plug](https://github.com/junegunn/vim-plug)
 
@@ -33,9 +36,10 @@ You can also create a mapping getting a preview of the current file
 ```viml
 noremap <leader>p :Glow<CR>
 ```
+
 For users who want to make glow.nvim buffer fullscreen, there's a native vim keybinding
 
-- `Ctrl-w + |`  set window's width max
+- `Ctrl-w + |` set window's width max
 - `Ctrl-w + _` set window's height max
 
 Or you can have a fullscreen option by creating a mapping for setting both window's height and width max at once
@@ -43,7 +47,6 @@ Or you can have a fullscreen option by creating a mapping for setting both windo
 ```viml
 noremap <C-w>z <C-w>\|<C-w>\_
 ```
-
 
 ## Screenshot
 
