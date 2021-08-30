@@ -40,87 +40,76 @@ local function has_value(tab, val)
 end
 
 local function install_glow()
-  local os, arch, format, bin_path, download_command, extract_command
-  local path_separator = "/"
+  local os, arch
   local version = "1.4.1"
 
-  -- detect os first
+  -- check pre-existence of required programs
+  if vim.fn.executable("curl") == 0 then
+    api.nvim_err_writeln("cURL is not installed!")
+    return
+  end
+
+  if vim.fn.executable("tar") == 0 then
+    api.nvim_err_writeln("tar is not installed!")
+    return
+  end
+
+  -- win install not supported for now
   if vim.fn.has("win32") ~= 0 then
     api.nvim_err_writeln(
       "Install script not supported on Windows yet. Please install glow manually")
     return
   else
-    os = vim.fn.trim(vim.fn.system('uname'))
+    os = vim.fn.trim(vim.fn.system("uname"))
   end
 
   -- based on os value, detect architecture and format
   if os == "Darwin" then
-    arch = vim.fn.trim(vim.fn.system('uname -m'))
+    arch = vim.fn.trim(vim.fn.system("uname -m"))
     if not has_value({"arm64", "x86_64"}, arch) then
       api.nvim_err_writeln("Architecture not supported/recognized!")
       return
     end
-    format = "tar.gz"
   elseif os == "Linux" then
     -- linux releases have "linux" in the name instead of "Linux"
     os = "linux"
-    arch = vim.fn.trim(vim.fn.system('uname -p'))
+    arch = vim.fn.trim(vim.fn.system("uname -p"))
     if arch == "unknown" then
-      arch = vim.fn.trim(vim.fn.system('uname -m'))
+      arch = vim.fn.trim(vim.fn.system("uname -m"))
     end
     if not has_value({"armv6", "armv7", "i386", "x86_64"}, arch) then
       api.nvim_err_writeln("Architecture not supported/recognized!")
       return
     end
-    format = "tar.gz"
   else
     api.nvim_err_writeln("OS not supported/recognized!")
     return
   end
 
-  -- create the url based on os, arch, version and format
-  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. "." .. format
+  -- create the url, filename based on os, arch, version
+  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. ".tar.gz"
   local url = "https://github.com/charmbracelet/glow/releases/download/v" .. version ..
                 "/" .. filename
 
-  bin_path = vim.env.HOME .. path_separator .. "bin"
-
-  -- test if the download tool and the extractor tool are present
-  -- if present, create the commands to download and extract
-  if vim.fn.executable("curl") == 0 then
-    api.nvim_err_writeln("cURL is not installed!")
-    return
-  else
-    download_command = {"curl", "-sL", "-o", "glow." .. format, url}
-  end
-  if format == "tar.gz" then
-    if vim.fn.executable("tar") == 0 then
-      api.nvim_err_writeln("tar is not installed!")
-      return
-    else
-      extract_command = {"tar", "-zxf", "glow.tar.gz", "-C", bin_path}
-    end
-  elseif format == "zip" then
-    if vim.fn.executable("unzip") == 0 then
-      api.nvim_err_writeln("unzip is not installed!")
-      return
-    else
-      extract_command = {"unzip", "glow.zip", "-d", bin_path}
-    end
-  end
+  local bin_path = vim.env.HOME .. "/" .. "bin"
+  local download_command = {"curl", "-sL", "-o", "glow.tar.gz", url}
+  local extract_command = {"tar", "-zxf", "glow.tar.gz", "-C", bin_path}
+  local output_filename = "glow.tar.gz"
 
   -- check for existing files / folders
   if vim.fn.isdirectory(bin_path) == 0 then
     vim.fn.mkdir(bin_path, "p")
   end
-  if vim.fn.empty(vim.fn.glob(bin_path .. path_separator .. "glow")) ~= 1 then
-    local success = vim.loop.fs_unlink(bin_path .. path_separator .. "glow")
+
+  if vim.fn.empty(vim.fn.glob(bin_path .. "/" .. "glow")) ~= 1 then
+    local success = vim.loop.fs_unlink(bin_path .. "/" .. "glow")
     if not success then
       return api.nvim_err_writeln("Glow binary could not be removed!")
     end
   end
-  if vim.fn.empty(vim.fn.glob("glow." .. format)) ~= 1 then
-    local success = vim.loop.fs_unlink("glow." .. format)
+
+  if vim.fn.empty(vim.fn.glob(output_filename)) ~= 1 then
+    local success = vim.loop.fs_unlink(output_filename)
     if not success then
       return api.nvim_err_writeln("Existing archive could not be removed!")
     end
@@ -130,18 +119,18 @@ local function install_glow()
   local callbacks = {
     on_sterr = vim.schedule_wrap(function(_, data, _)
       local out = table.concat(data, "\n")
-      vim.api.nvim_err_writeln(out)
+      api.nvim_err_writeln(out)
     end),
     on_exit = vim.schedule_wrap(function(_, _, _)
       vim.fn.system(extract_command)
       -- remove the archive after completion
-      if vim.fn.empty(vim.fn.glob("glow." .. format)) ~= 1 then
-        local success = vim.loop.fs_unlink("glow." .. format)
+      if vim.fn.empty(vim.fn.glob(output_filename)) ~= 1 then
+        local success = vim.loop.fs_unlink(output_filename)
         if not success then
           return api.nvim_err_writeln("Existing archive could not be removed!")
         end
       end
-      api.nvim_out_write("Glow installed successfully!\n")
+      print("Glow installed successfully!")
     end),
   }
   vim.fn.jobstart(download_command, callbacks)
@@ -162,10 +151,9 @@ function M.download_glow()
     end
 
     if answer == "n" then
-      api.nvim_out_write("\n")
       return
     end
-    api.nvim_out_write("updating glow..\n")
+    print("updating glow..")
   else
     print("installing glow..")
   end
