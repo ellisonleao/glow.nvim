@@ -5,23 +5,48 @@ A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim 
 ## Prerequisites
 
 - Neovim 0.5 or higher
-- Glow binary will be downloaded in to `$HOME/bin` folder. Make sure to add it in `$PATH`
 
 ## Installing
 
 with [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
-Plug 'ellisonleao/glow.nvim', {'do': ':GlowInstall', 'branch': 'main'}
+Plug 'ellisonleao/glow.nvim'
 ```
 
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"ellisonleao/glow.nvim", run = "GlowInstall"}
+use {"ellisonleao/glow.nvim"}
 ```
 
+## Configuration
+
+- Binary path
+
+This config will be used to set where the `glow` binary is installed if already available in `$PATH`. Same path will be
+used if you need to download it
+
+Use `g:glow_binary_path` for vimscript config or `vim.g.glow_binary_path` for lua config. Example:
+
+```viml
+let g:glow_binary_path = $HOME . "/bin"
+```
+
+```lua
+vim.g.glow_binary_path = vim.env.HOME .. "/bin"
+```
+
+If no config is available, the default path will be `$HOME/.local/bin` . Make sure to add it into `$PATH` if that's the
+case.
+
 ## Usage
+
+```
+:GlowInstall
+```
+
+This will install the `glow` dependency into `g:glow_binary_path` or `$HOME/.local/bin` if not defined.
 
 ```
 :Glow [path-to-md-file]

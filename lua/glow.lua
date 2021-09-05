@@ -1,11 +1,14 @@
 local api = vim.api
 local win, buf
+local bin_path = vim.g.glow_binary_path
+if bin_path == nil then
+  bin_path = vim.env.HOME .. "/.local/bin"
+end
 local M = {}
 
 local function validate(path)
-  if vim.fn.executable("glow") == 0 then
-    api.nvim_err_writeln("glow is not installed. Call :GlowInstall to install it")
-    return
+  if vim.fn.executable(bin_path .. "/glow") == 0 then
+    return M.download_glow()
   end
 
   -- trim and get the full path
@@ -15,6 +18,7 @@ local function validate(path)
   path = vim.fn.expand(path)
   path = vim.fn.fnamemodify(path, ":p")
   local file_exists = vim.fn.filereadable(path) == 1 and vim.fn.bufexists(path) == 1
+
   -- check if file exists
   if not file_exists then
     api.nvim_err_writeln("file does not exists")
@@ -91,7 +95,6 @@ local function install_glow()
   local url = "https://github.com/charmbracelet/glow/releases/download/v" .. version ..
                 "/" .. filename
 
-  local bin_path = vim.env.HOME .. "/" .. "bin"
   local download_command = {"curl", "-sL", "-o", "glow.tar.gz", url}
   local extract_command = {"tar", "-zxf", "glow.tar.gz", "-C", bin_path}
   local output_filename = "glow.tar.gz"
@@ -101,8 +104,8 @@ local function install_glow()
     vim.fn.mkdir(bin_path, "p")
   end
 
-  if vim.fn.empty(vim.fn.glob(bin_path .. "/" .. "glow")) ~= 1 then
-    local success = vim.loop.fs_unlink(bin_path .. "/" .. "glow")
+  if vim.fn.empty(vim.fn.glob(bin_path .. "/glow")) ~= 1 then
+    local success = vim.loop.fs_unlink(bin_path .. "/glow")
     if not success then
       return api.nvim_err_writeln("Glow binary could not be removed!")
     end
@@ -141,9 +144,9 @@ function M.close_window()
 end
 
 function M.download_glow()
-  if vim.fn.executable("glow") == 1 then
+  if vim.fn.executable(bin_path .. "/glow") == 1 then
     local answer = vim.fn.input(
-                     "latest glow already installed, do you want update? Y/n = ")
+                     "latest glow already installed in ".. bin_path .."/glow, do you want update? Y/n = ")
     answer = string.lower(answer)
     while answer ~= "y" and answer ~= "n" do
       answer = vim.fn.input("please answer Y or n = ")
@@ -184,14 +187,13 @@ local function open_window(path)
   -- create preview buffer and set local options
   buf = api.nvim_create_buf(false, true)
   win = api.nvim_open_win(buf, true, opts)
+  api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+  api.nvim_win_set_option(win, "winblend", 0)
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
 
-  -- set local options
-  api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  api.nvim_win_set_option(win, "winblend", 0)
   vim.fn.termopen(string.format("glow %s", vim.fn.shellescape(path)))
 end
 
