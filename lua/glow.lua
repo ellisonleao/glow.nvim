@@ -6,6 +6,15 @@ if bin_path == nil then
 end
 local M = {}
 
+local function has_value(tab, val)
+  for _, value in ipairs(tab) do
+    if value == val then
+      return true
+    end
+  end
+  return false
+end
+
 local function validate(path)
   if vim.fn.executable(bin_path .. "/glow") == 0 then
     return M.download_glow()
@@ -17,7 +26,7 @@ local function validate(path)
   path = path == "" and "%" or path
   path = vim.fn.expand(path)
   path = vim.fn.fnamemodify(path, ":p")
-  local file_exists = vim.fn.filereadable(path) == 1 and vim.fn.bufexists(path) == 1
+  local file_exists = vim.fn.filereadable(path) == 1
 
   -- check if file exists
   if not file_exists then
@@ -26,21 +35,12 @@ local function validate(path)
   end
 
   local ext = vim.fn.fnamemodify(path, ":e")
-  if ext ~= "md" or vim.bo.filetype ~= "markdown" then
+  if not has_value({"md", "markdown"}, ext) then
     api.nvim_err_writeln("glow only support markdown files")
     return
   end
 
   return path
-end
-
-local function has_value(tab, val)
-  for _, value in ipairs(tab) do
-    if value == val then
-      return true
-    end
-  end
-  return false
 end
 
 local function install_glow()
