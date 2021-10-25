@@ -194,7 +194,7 @@ local function open_window(path)
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
 
-  vim.fn.termopen(string.format("glow %s", vim.fn.shellescape(path)))
+  vim.fn.termopen(string.format("%s/glow %s", bin_path, vim.fn.shellescape(path)))
 end
 
 function M.glow(file)
