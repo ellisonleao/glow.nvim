@@ -4,6 +4,11 @@ local bin_path = vim.g.glow_binary_path
 if bin_path == nil then
   bin_path = vim.env.HOME .. "/.local/bin"
 end
+
+local use_path_glow = vim.g.glow_binary_path == nil and vim.fn.executable("glow") == 1
+
+local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
+
 local M = {}
 
 local function has_value(tab, val)
@@ -16,7 +21,7 @@ local function has_value(tab, val)
 end
 
 local function validate(path)
-  if vim.fn.executable(bin_path .. "/glow") == 0 then
+  if vim.fn.executable(glow_path) == 0 then
     return M.download_glow()
   end
 
@@ -194,7 +199,7 @@ local function open_window(path)
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
 
-  vim.fn.termopen(string.format("%s/glow %s", bin_path, vim.fn.shellescape(path)))
+  vim.fn.termopen(string.format("%s %s", glow_path, vim.fn.shellescape(path)))
 end
 
 function M.glow(file)

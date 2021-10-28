@@ -22,12 +22,16 @@ use {"ellisonleao/glow.nvim"}
 
 ## Configuration
 
-- Binary path
+- `glow_binary_path`
 
-This config will be used to set where the `glow` binary is installed if already available in `$PATH`. Same path will be
-used if you need to download it
+Use `g:glow_binary_path` for vimscript config or `vim.g.glow_binary_path` for lua config.
 
-Use `g:glow_binary_path` for vimscript config or `vim.g.glow_binary_path` for lua config. Example:
+If set, this path will be used to execute `glow`. Otherwise rely on `$PATH`.
+
+If `glow` is not on `$PATH` or `glow_binary_path` is set and `glow` is not found
+there, this path will be used to download the `glow` executable. It defaults to `$HOME/.local/bin`.
+
+Example:
 
 ```viml
 let g:glow_binary_path = $HOME . "/bin"
@@ -36,9 +40,6 @@ let g:glow_binary_path = $HOME . "/bin"
 ```lua
 vim.g.glow_binary_path = vim.env.HOME .. "/bin"
 ```
-
-If no config is available, the default path will be `$HOME/.local/bin` . Make sure to add it into `$PATH` if that's the
-case.
 
 ## Usage
 
