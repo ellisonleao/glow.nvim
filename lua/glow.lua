@@ -10,7 +10,7 @@ local use_path_glow = vim.g.glow_binary_path == nil and vim.fn.executable("glow"
 local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
 
 local glow_border = vim.g.glow_border
-local winhl = vim.g.glow_winhl
+local glow_winhl = vim.g.glow_winhl
 local glow_width = vim.g.glow_width
 
 local M = {}
@@ -180,13 +180,12 @@ local function open_window(path)
   local height = api.nvim_get_option("lines")
   local win_height = math.ceil(height * 0.8 - 4)
   local win_width = math.ceil(width * 0.8)
+  local row = math.ceil((height - win_height) / 2 - 1)
+  local col = math.ceil((width - win_width) / 2)
 
   if glow_width and glow_width < win_width then
     win_width = glow_width
   end
-
-  local row = math.ceil((height - win_height) / 2 - 1)
-  local col = math.ceil((width - win_width) / 2)
 
   local opts = {
     style = "minimal",
@@ -203,8 +202,8 @@ local function open_window(path)
   win = api.nvim_open_win(buf, true, opts)
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_win_set_option(win, "winblend", 0)
-  if winhl then
-    api.nvim_win_set_option(win, 'winhl', winhl)
+  if glow_winhl then
+    api.nvim_win_set_option(win, 'winhl', glow_winhl)
   end
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})

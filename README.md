@@ -41,6 +41,54 @@ let g:glow_binary_path = $HOME . "/bin"
 vim.g.glow_binary_path = vim.env.HOME .. "/bin"
 ```
 
+- `glow_border`
+
+Use `g:glow_border` for vimscript config or `vim.g.glow_border` for lua config.
+
+If set, this will change the border of the window. Type `:help nvim_open_win` for border options.
+
+Example:
+
+```viml
+let g:glow_border = "rounded"
+```
+
+```lua
+vim.g.glow_border = "rounded"
+```
+
+- `glow_winhl`
+
+Use `g:glow_winhl` for vimscript config or `vim.g.glow_winhl` for lua config.
+
+If set, this will change the highlight of the window.
+
+Example:
+
+```viml
+let g:glow_winhl = "Normal:MyHighlight"
+```
+
+```lua
+vim.g.glow_winhl = "Normal:MyHighlight"
+```
+
+- `glow_width`
+
+Use `g:glow_width` for vimscript config or `vim.g.glow_width` for lua config.
+
+If set, this will change the width of the window.
+
+Example:
+
+```viml
+let g:glow_width = 120
+```
+
+```lua
+vim.g.glow_width = 120
+```
+
 ## Usage
 
 ```
