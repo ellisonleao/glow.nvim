@@ -10,6 +10,7 @@ local use_path_glow = vim.g.glow_binary_path == nil and vim.fn.executable("glow"
 local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
 
 local glow_border = vim.g.glow_border
+local winhl = vim.g.glow_winhl
 
 local M = {}
 
@@ -196,6 +197,9 @@ local function open_window(path)
   win = api.nvim_open_win(buf, true, opts)
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_win_set_option(win, "winblend", 0)
+  if winhl then
+    api.nvim_win_set_option(win, 'winhl', winhl)
+  end
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
