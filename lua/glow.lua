@@ -40,7 +40,7 @@ local function validate(path)
   end
 
   local ext = vim.fn.fnamemodify(path, ":e")
-  if not has_value({"md", "markdown"}, ext) then
+  if not has_value({"md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext"}, ext) then
     api.nvim_err_writeln("glow only support markdown files")
     return
   end
