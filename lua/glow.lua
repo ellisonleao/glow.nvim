@@ -9,6 +9,9 @@ local use_path_glow = vim.g.glow_binary_path == nil and vim.fn.executable("glow"
 
 local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
 
+local glow_border = vim.g.glow_border
+local glow_width = vim.g.glow_width
+
 local M = {}
 
 local function has_value(tab, val)
@@ -179,6 +182,10 @@ local function open_window(path)
   local row = math.ceil((height - win_height) / 2 - 1)
   local col = math.ceil((width - win_width) / 2)
 
+  if glow_width and glow_width < win_width then
+    win_width = glow_width
+  end
+
   local opts = {
     style = "minimal",
     relative = "editor",
@@ -186,7 +193,7 @@ local function open_window(path)
     height = win_height,
     row = row,
     col = col,
-    border = "shadow",
+    border = glow_border or "shadow",
   }
 
   -- create preview buffer and set local options
