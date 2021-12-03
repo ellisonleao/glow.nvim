@@ -11,6 +11,7 @@ local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
 
 local glow_border = vim.g.glow_border
 local glow_width = vim.g.glow_width
+local glow_theme = vim.g.glow_theme or "light"
 
 local M = {}
 
@@ -206,7 +207,7 @@ local function open_window(path)
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
 
-  vim.fn.termopen(string.format("%s %s", glow_path, vim.fn.shellescape(path)))
+  vim.fn.termopen(string.format("%s %s -s %s", glow_path, vim.fn.shellescape(path), glow_theme))
 end
 
 function M.glow(file)
