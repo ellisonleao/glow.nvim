@@ -11,6 +11,7 @@ local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
 
 local glow_border = vim.g.glow_border
 local glow_width = vim.g.glow_width
+local glow_use_pager = vim.g.glow_use_pager
 
 local M = {}
 
@@ -206,7 +207,8 @@ local function open_window(path)
   api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
 
-  vim.fn.termopen(string.format("%s %s", glow_path, vim.fn.shellescape(path)))
+  local use_pager = glow_use_pager and '-p' or ''
+  vim.fn.termopen(string.format("%s %s %s", glow_path, use_pager, vim.fn.shellescape(path)))
 end
 
 function M.glow(file)
