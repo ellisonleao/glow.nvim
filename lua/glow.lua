@@ -200,6 +200,7 @@ local function open_window(path)
   buf = api.nvim_create_buf(false, true)
   win = api.nvim_open_win(buf, true, opts)
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+  api.nvim_buf_set_option(buf, "filetype", "glowpreview")
   api.nvim_win_set_option(win, "winblend", 0)
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
                           {noremap = true, silent = true})
