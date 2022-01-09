@@ -73,6 +73,22 @@ let g:glow_width = 120
 vim.g.glow_width = 120
 ```
 
+- `glow_use_pager`
+
+Use `g:glow_use_pager` for vimscript config or `vim.g.glow_use_pager` for lua config.
+
+If set true, `glow` uses the pager to show the doc.
+
+Example:
+
+```viml
+let g:glow_use_pager = v:true
+```
+
+```lua
+vim.g.glow_use_pager = true
+```
+
 - `glow_style`
 
 Use `g:glow_style` for vimscript config or `vim.g.glow_style` for lua config.
@@ -82,6 +98,7 @@ If set, this will change the output style to either `dark` (default) or `light`.
 Example:
 
 ```viml
+<<<<<<< HEAD
 let g:glow_style = "light"
 ```
 
