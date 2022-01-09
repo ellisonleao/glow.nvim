@@ -89,6 +89,21 @@ let g:glow_use_pager = v:true
 vim.g.glow_use_pager = true
 ```
 
+- `glow_style`
+
+Use `g:glow_style` for vimscript config or `vim.g.glow_style` for lua config.
+
+If set, this will change the output style to either `dark` (default) or `light`.
+
+Example:
+
+```viml
+let g:glow_style = "light"
+```
+
+```lua
+vim.g.glow_style = "light"
+```
 ## Usage
 
 ```
