@@ -104,7 +104,6 @@ let g:glow_style = "light"
 ```lua
 vim.g.glow_style = "light"
 ```
-
 ## Usage
 
 ```
