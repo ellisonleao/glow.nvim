@@ -98,7 +98,6 @@ If set, this will change the output style to either `dark` (default) or `light`.
 Example:
 
 ```viml
-<<<<<<< HEAD
 let g:glow_style = "light"
 ```
 
