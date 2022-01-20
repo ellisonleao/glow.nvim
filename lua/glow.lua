@@ -84,16 +84,21 @@ local function install_glow()
       api.nvim_err_writeln("Architecture not supported/recognized!")
       return
     end
-  elseif os == "Linux" then
+  elseif os == "Linux" or os == "FreeBSD" or os == "OpenBSD" then
     -- linux releases have "linux" in the name instead of "Linux"
-    os = "linux"
+    if os == "Linux" then
+      os = "linux"
+    end
     arch = vim.fn.trim(vim.fn.system("uname -p"))
     if arch == "unknown" then
       arch = vim.fn.trim(vim.fn.system("uname -m"))
     end
-    if not has_value({"armv6", "armv7", "i386", "x86_64"}, arch) then
+    if not has_value({"armv6", "armv7", "i386", "x86_64", "amd64"}, arch) then
       api.nvim_err_writeln("Architecture not supported/recognized!")
       return
+    end
+    if arch == "amd64" then
+      arch = "x86_64"
     end
   else
     api.nvim_err_writeln("OS not supported/recognized!")
