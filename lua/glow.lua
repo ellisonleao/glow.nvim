@@ -18,7 +18,7 @@ local M = {}
 
 local function has_value(tab, val)
   for _, value in ipairs(tab) do
-    if value == val then
+    if value == val:lower() then
       return true
     end
   end
