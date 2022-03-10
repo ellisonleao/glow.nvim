@@ -32,7 +32,7 @@ local function validate(path)
 
   -- trim and get the full path
   path = string.gsub(path, "%s+", "")
-  path = string.gsub(path, "\"", "")
+  path = string.gsub(path, '"', "")
   path = path == "" and "%" or path
   path = vim.fn.expand(path)
   path = vim.fn.fnamemodify(path, ":p")
@@ -45,7 +45,7 @@ local function validate(path)
   end
 
   local ext = vim.fn.fnamemodify(path, ":e")
-  local allowed_exts ={"md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd"}
+  local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd" }
   if not has_value(allowed_exts, ext) then
     api.nvim_err_writeln("glow only support markdown files")
     return
@@ -71,8 +71,7 @@ local function install_glow()
 
   -- win install not supported for now
   if vim.fn.has("win32") ~= 0 then
-    api.nvim_err_writeln(
-      "Install script not supported on Windows yet. Please install glow manually")
+    api.nvim_err_writeln("Install script not supported on Windows yet. Please install glow manually")
     return
   else
     os = vim.fn.trim(vim.fn.system("uname"))
@@ -81,7 +80,7 @@ local function install_glow()
   -- based on os value, detect architecture and format
   if os == "Darwin" then
     arch = vim.fn.trim(vim.fn.system("uname -m"))
-    if not has_value({"arm64", "x86_64"}, arch) then
+    if not has_value({ "arm64", "x86_64" }, arch) then
       api.nvim_err_writeln("Architecture not supported/recognized!")
       return
     end
@@ -94,7 +93,7 @@ local function install_glow()
     if arch == "unknown" then
       arch = vim.fn.trim(vim.fn.system("uname -m"))
     end
-    if not has_value({"armv6", "armv7", "i386", "x86_64", "amd64"}, arch) then
+    if not has_value({ "armv6", "armv7", "i386", "x86_64", "amd64" }, arch) then
       api.nvim_err_writeln("Architecture not supported/recognized!")
       return
     end
@@ -108,11 +107,10 @@ local function install_glow()
 
   -- create the url, filename based on os, arch, version
   local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. ".tar.gz"
-  local url = "https://github.com/charmbracelet/glow/releases/download/v" .. version ..
-                "/" .. filename
+  local url = "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
 
-  local download_command = {"curl", "-sL", "-o", "glow.tar.gz", url}
-  local extract_command = {"tar", "-zxf", "glow.tar.gz", "-C", bin_path}
+  local download_command = { "curl", "-sL", "-o", "glow.tar.gz", url }
+  local extract_command = { "tar", "-zxf", "glow.tar.gz", "-C", bin_path }
   local output_filename = "glow.tar.gz"
 
   -- check for existing files / folders
@@ -161,8 +159,7 @@ end
 
 function M.download_glow()
   if vim.fn.executable(bin_path .. "/glow") == 1 then
-    local answer = vim.fn.input(
-                     "latest glow already installed in ".. bin_path .."/glow, do you want update? Y/n = ")
+    local answer = vim.fn.input("latest glow already installed in " .. bin_path .. "/glow, do you want update? Y/n = ")
     answer = string.lower(answer)
     while answer ~= "y" and answer ~= "n" do
       answer = vim.fn.input("please answer Y or n = ")
@@ -181,7 +178,6 @@ end
 
 -- open_window draws a custom window with the markdown contents
 local function open_window(path)
-
   -- window size
   local width = api.nvim_get_option("columns")
   local height = api.nvim_get_option("lines")
@@ -210,12 +206,16 @@ local function open_window(path)
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_buf_set_option(buf, "filetype", "glowpreview")
   api.nvim_win_set_option(win, "winblend", 0)
-  api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>",
-                          {noremap = true, silent = true})
-  api.nvim_buf_set_keymap(buf, "n", "<Esc>", ":lua require('glow').close_window()<cr>",
-                          {noremap = true, silent = true})
+  api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>", { noremap = true, silent = true })
+  api.nvim_buf_set_keymap(
+    buf,
+    "n",
+    "<Esc>",
+    ":lua require('glow').close_window()<cr>",
+    { noremap = true, silent = true }
+  )
 
-  local use_pager = glow_use_pager and '-p' or ''
+  local use_pager = glow_use_pager and "-p" or ""
   vim.fn.termopen(string.format("%s %s -s %s %s", glow_path, use_pager, glow_style, vim.fn.shellescape(path)))
 end
 
