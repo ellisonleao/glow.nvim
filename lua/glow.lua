@@ -1,22 +1,19 @@
 local api = vim.api
+local uv = vim.loop
 local win, buf
-local bin_path = vim.g.glow_binary_path
-if bin_path == nil then
-  bin_path = vim.env.HOME .. "/.local/bin"
-end
-
-local use_path_glow = vim.g.glow_binary_path == nil and vim.fn.executable("glow") == 1
-
-local glow_path = use_path_glow and "glow" or bin_path .. "/glow"
-
-local glow_style = vim.g.glow_style or "dark"
-local glow_border = vim.g.glow_border
-local glow_width = vim.g.glow_width
-local glow_use_pager = vim.g.glow_use_pager
-
 local M = {}
 
-local function has_value(tab, val)
+-- default configs
+M.config = {
+  glow_path = vim.fn.exepath("glow"),
+  glow_install_path = vim.env.HOME .. "/.local/bin",
+  border = "shadow",
+  style = vim.opt.background:get(),
+  pager = false,
+  width = 80,
+}
+
+local function has_value(val, tab)
   for _, value in ipairs(tab) do
     if value == val:lower() then
       return true
@@ -25,9 +22,91 @@ local function has_value(tab, val)
   return false
 end
 
+local function install_glow()
+  local os, arch
+  local version = "1.4.1"
+  local install_path = M.config.glow_install_path
+
+  -- check pre-existence of required programs
+  if vim.fn.executable("curl") == 0 or vim.fn.executable("tar") == 0 then
+    api.nvim_err_writeln("cURL and/or tar are not installed!")
+    return
+  end
+
+  -- win install not supported for now
+  if vim.fn.has("win32") ~= 0 then
+    api.nvim_err_writeln("Install script not supported on Windows yet. Please install glow manually")
+    return
+  end
+
+  local raw_os = jit.os
+  local raw_arch = jit.arch
+  local os_patterns = {
+    ["Windows"] = "Windows",
+    ["Linux"] = "linux",
+    ["Darwin"] = "Darwin",
+    ["BSD"] = "freebsd",
+  }
+
+  local arch_patterns = {
+    ["x86"] = "i386",
+    ["x64"] = "x86_64",
+    ["arm"] = "arm7",
+  }
+
+  os = os_patterns[raw_os]
+  arch = arch_patterns[raw_arch]
+
+  if os == nil or arch == nil then
+    api.nvim_err_writeln("OS not supported")
+  end
+
+  -- create the url, filename based on os, arch, version
+  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. ".tar.gz"
+  local url = "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
+
+  local download_command = { "curl", "-sL", "-o", "glow.tar.gz", url }
+  local extract_command = { "tar", "-zxf", "glow.tar.gz", "-C", install_path }
+  local output_filename = "glow.tar.gz"
+
+  -- check for existing files / folders
+  if vim.fn.isdirectory(M.config.glow_install_path) == 0 then
+    uv.fs_mkdir(M.config.install_path, "p")
+  end
+
+  if vim.fn.empty(vim.fn.glob(install_path .. "/glow")) ~= 1 then
+    local success = uv.fs_unlink(install_path .. "/glow")
+    if not success then
+      return api.nvim_err_writeln("Glow binary could not be removed!")
+    end
+  end
+
+  -- download and install the glow binary
+  local callbacks = {
+    on_sterr = vim.schedule_wrap(function(_, data, _)
+      local out = table.concat(data, "\n")
+      api.nvim_err_writeln(out)
+    end),
+    on_exit = vim.schedule_wrap(function(_, _, _)
+      vim.fn.system(extract_command)
+      -- remove the archive after completion
+      if vim.fn.empty(vim.fn.glob(output_filename)) ~= 1 then
+        local success = uv.fs_unlink(output_filename)
+        if not success then
+          return api.nvim_err_writeln("existing archive could not be removed!")
+        end
+      end
+      print("glow installed successfully!")
+      M.config.glow_path = vim.fn.exepath("glow")
+    end),
+  }
+  vim.fn.jobstart(download_command, callbacks)
+end
+
 local function validate(path)
-  if vim.fn.executable(glow_path) == 0 then
-    return M.download_glow()
+  if M.config.glow_path == "" then
+    print("glow not installed.. initiating installation..")
+    return install_glow()
   end
 
   -- trim and get the full path
@@ -46,7 +125,7 @@ local function validate(path)
 
   local ext = vim.fn.fnamemodify(path, ":e")
   local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd" }
-  if not has_value(allowed_exts, ext) then
+  if not has_value(ext, allowed_exts) then
     api.nvim_err_writeln("glow only support markdown files")
     return
   end
@@ -54,131 +133,16 @@ local function validate(path)
   return path
 end
 
-local function install_glow()
-  local os, arch
-  local version = "1.4.1"
-
-  -- check pre-existence of required programs
-  if vim.fn.executable("curl") == 0 then
-    api.nvim_err_writeln("cURL is not installed!")
-    return
-  end
-
-  if vim.fn.executable("tar") == 0 then
-    api.nvim_err_writeln("tar is not installed!")
-    return
-  end
-
-  -- win install not supported for now
-  if vim.fn.has("win32") ~= 0 then
-    api.nvim_err_writeln("Install script not supported on Windows yet. Please install glow manually")
-    return
-  else
-    os = vim.fn.trim(vim.fn.system("uname"))
-  end
-
-  -- based on os value, detect architecture and format
-  if os == "Darwin" then
-    arch = vim.fn.trim(vim.fn.system("uname -m"))
-    if not has_value({ "arm64", "x86_64" }, arch) then
-      api.nvim_err_writeln("Architecture not supported/recognized!")
-      return
-    end
-  elseif os == "Linux" or os == "FreeBSD" or os == "OpenBSD" then
-    -- linux releases have "linux" in the name instead of "Linux"
-    if os == "Linux" then
-      os = "linux"
-    end
-    arch = vim.fn.trim(vim.fn.system("uname -p"))
-    if arch == "unknown" then
-      arch = vim.fn.trim(vim.fn.system("uname -m"))
-    end
-    if not has_value({ "armv6", "armv7", "i386", "x86_64", "amd64" }, arch) then
-      api.nvim_err_writeln("Architecture not supported/recognized!")
-      return
-    end
-    if arch == "amd64" then
-      arch = "x86_64"
-    end
-  else
-    api.nvim_err_writeln("OS not supported/recognized!")
-    return
-  end
-
-  -- create the url, filename based on os, arch, version
-  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. ".tar.gz"
-  local url = "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
-
-  local download_command = { "curl", "-sL", "-o", "glow.tar.gz", url }
-  local extract_command = { "tar", "-zxf", "glow.tar.gz", "-C", bin_path }
-  local output_filename = "glow.tar.gz"
-
-  -- check for existing files / folders
-  if vim.fn.isdirectory(bin_path) == 0 then
-    vim.fn.mkdir(bin_path, "p")
-  end
-
-  if vim.fn.empty(vim.fn.glob(bin_path .. "/glow")) ~= 1 then
-    local success = vim.loop.fs_unlink(bin_path .. "/glow")
-    if not success then
-      return api.nvim_err_writeln("Glow binary could not be removed!")
-    end
-  end
-
-  if vim.fn.empty(vim.fn.glob(output_filename)) ~= 1 then
-    local success = vim.loop.fs_unlink(output_filename)
-    if not success then
-      return api.nvim_err_writeln("Existing archive could not be removed!")
-    end
-  end
-
-  -- download and install the glow binary
-  local callbacks = {
-    on_sterr = vim.schedule_wrap(function(_, data, _)
-      local out = table.concat(data, "\n")
-      api.nvim_err_writeln(out)
-    end),
-    on_exit = vim.schedule_wrap(function(_, _, _)
-      vim.fn.system(extract_command)
-      -- remove the archive after completion
-      if vim.fn.empty(vim.fn.glob(output_filename)) ~= 1 then
-        local success = vim.loop.fs_unlink(output_filename)
-        if not success then
-          return api.nvim_err_writeln("Existing archive could not be removed!")
-        end
-      end
-      print("Glow installed successfully!")
-    end),
-  }
-  vim.fn.jobstart(download_command, callbacks)
+function M.setup(params)
+  M.config = vim.tbl_deep_extend("force", {}, M.config, params or {})
 end
 
 function M.close_window()
   api.nvim_win_close(win, true)
 end
 
-function M.download_glow()
-  if vim.fn.executable(bin_path .. "/glow") == 1 then
-    local answer = vim.fn.input("latest glow already installed in " .. bin_path .. "/glow, do you want update? Y/n = ")
-    answer = string.lower(answer)
-    while answer ~= "y" and answer ~= "n" do
-      answer = vim.fn.input("please answer Y or n = ")
-      answer = string.lower(answer)
-    end
-
-    if answer == "n" then
-      return
-    end
-    print("updating glow..")
-  else
-    print("installing glow..")
-  end
-  install_glow()
-end
-
 -- open_window draws a custom window with the markdown contents
 local function open_window(path)
-  -- window size
   local width = api.nvim_get_option("columns")
   local height = api.nvim_get_option("lines")
   local win_height = math.ceil(height * 0.8 - 4)
@@ -186,8 +150,8 @@ local function open_window(path)
   local row = math.ceil((height - win_height) / 2 - 1)
   local col = math.ceil((width - win_width) / 2)
 
-  if glow_width and glow_width < win_width then
-    win_width = glow_width
+  if M.config.width and M.config.width < win_width then
+    win_width = M.config.width
   end
 
   local opts = {
@@ -197,15 +161,16 @@ local function open_window(path)
     height = win_height,
     row = row,
     col = col,
-    border = glow_border or "shadow",
+    border = M.config.border,
   }
 
   -- create preview buffer and set local options
   buf = api.nvim_create_buf(false, true)
   win = api.nvim_open_win(buf, true, opts)
+
+  api.nvim_win_set_option(win, "winblend", 0)
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_buf_set_option(buf, "filetype", "glowpreview")
-  api.nvim_win_set_option(win, "winblend", 0)
   api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>", { noremap = true, silent = true })
   api.nvim_buf_set_keymap(
     buf,
@@ -215,8 +180,17 @@ local function open_window(path)
     { noremap = true, silent = true }
   )
 
-  local use_pager = glow_use_pager and "-p" or ""
-  vim.fn.termopen(string.format("%s %s -s %s %s", glow_path, use_pager, glow_style, vim.fn.shellescape(path)))
+  local cmd = { M.config.glow_path, "-s " .. M.config.style }
+  if M.config.pager then
+    table.insert(cmd, "-p")
+  end
+  table.insert(cmd, vim.fn.shellescape(path))
+  cmd = table.concat(cmd, " ")
+  vim.fn.termopen(cmd)
+
+  if M.config.pager then
+    vim.cmd("startinsert")
+  end
 end
 
 function M.glow(file)
