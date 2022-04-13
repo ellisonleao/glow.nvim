@@ -11,13 +11,13 @@ A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim 
 with [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
-Plug 'ellisonleao/glow.nvim'
+Plug 'ellisonleao/glow.nvim', {'branch': 'main'}
 ```
 
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"ellisonleao/glow.nvim"}
+use {"ellisonleao/glow.nvim", branch = 'main'}
 ```
 
 ## Configuration
