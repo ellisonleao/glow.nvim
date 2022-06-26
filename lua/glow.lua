@@ -220,6 +220,61 @@ local function open_window(path)
   vim.fn.termopen(string.format("%s %s -s %s %s", glow_path, use_pager, glow_style, vim.fn.shellescape(path)))
 end
 
+
+local function open_string_window(str)
+  -- window size
+  local width = api.nvim_get_option("columns")
+  local height = api.nvim_get_option("lines")
+  local win_height = math.ceil(height * 0.8 - 4)
+  local win_width = math.ceil(width * 0.8)
+  local row = math.ceil((height - win_height) / 2 - 1)
+  local col = math.ceil((width - win_width) / 2)
+
+  if glow_width and glow_width < win_width then
+    win_width = glow_width
+  end
+
+  local opts = {
+    style = "minimal",
+    relative = "editor",
+    width = win_width,
+    height = win_height,
+    row = row,
+    col = col,
+    border = glow_border or "shadow",
+  }
+
+  -- create preview buffer and set local options
+  buf = api.nvim_create_buf(false, true)
+  win = api.nvim_open_win(buf, true, opts)
+  api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+  api.nvim_buf_set_option(buf, "filetype", "glowpreview")
+  api.nvim_win_set_option(win, "winblend", 0)
+  api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>", { noremap = true, silent = true })
+  api.nvim_buf_set_keymap(
+    buf,
+    "n",
+    "<Esc>",
+    ":lua require('glow').close_window()<cr>",
+    { noremap = true, silent = true }
+  )
+
+  local use_pager = glow_use_pager and "-p" or ""
+  vim.fn.termopen(string.format("print '%s' | %s %s -s %s %s", str, glow_path, use_pager, glow_style, "-"))
+end
+
+function M.glow_string(string)
+  local current_win = vim.fn.win_getid()
+  if current_win == win then
+    M.close_window()
+  else
+    if string == nil then
+      return
+    end
+    open_string_window(string)
+  end
+end
+
 function M.glow(file)
   local current_win = vim.fn.win_getid()
   if current_win == win then
