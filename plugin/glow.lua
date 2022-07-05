@@ -1,2 +1,3 @@
 -- create install cmd
-vim.cmd("command! -nargs=? -complete=file Glow :lua require('glow').glow('<f-args>')")
+vim.api.nvim_create_user_command("Glow", function(opts) require("glow").glow(opts) end,
+  { complete = "file", nargs = "*", bang = true })

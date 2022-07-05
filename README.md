@@ -9,11 +9,14 @@
   </p>
   <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
   <img src="https://img.shields.io/github/workflow/status/ellisonleao/glow.nvim/default?style=for-the-badge" />
+  <p>
+  <img src="https://i.postimg.cc/rynmX2X8/glow.gif" />
+  </p>
 </div>
 
 ## Prerequisites
 
-- Neovim 0.5 or higher
+- Neovim 0.7+
 
 ## Installing
 
@@ -63,18 +66,12 @@ require('glow').setup({
 ## Usage
 
 ```
-:GlowInstall
-```
-
-This will install the `glow` dependency into your config's `glow_install_path` or `$HOME/.local/bin` by default.
-
-```
 :Glow [path-to-md-file]
 ```
 
-- Pressing `q` will automatically close the window
 - No path arg means glow uses current path in vim
 - `:Glow` command will work as toogle feature, so calling it will open or close the current preview
+- Pressing `q` or `<Esc>` will automatically close the window
 
 You can also create a mapping getting a preview of the current file
 
@@ -82,19 +79,6 @@ You can also create a mapping getting a preview of the current file
 noremap <leader>p :Glow<CR>
 ```
 
-## Curiosities
-
-For users who want to make glow.nvim buffer fullscreen, there's a native vim keybinding
-
-- `Ctrl-w + |` set window's width max
-- `Ctrl-w + _` set window's height max
-
-Or you can have a fullscreen option by creating a mapping for setting both window's height and width max at once
-
-```viml
-noremap <C-w>z <C-w>\|<C-w>\_
+```lua
+vim.keymap.set("n", "<leader>p", "<Cmd>Glow<CR>",{ remap = false, silent = true })
 ```
-
-## Screenshot
-
-![](https://i.postimg.cc/rynmX2X8/glow.gif)

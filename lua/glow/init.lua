@@ -1,6 +1,7 @@
 local api = vim.api
 local uv = vim.loop
 local win, buf
+local utils = require("glow.utils")
 local M = {}
 
 -- default configs
@@ -15,21 +16,22 @@ M.config = {
 }
 
 local function install_glow()
-  local utils = require("glow.utils")
   local release_url = utils.release_file_url()
+  local install_path = M.config.glow_install_path
   local download_command = { "curl", "-sL", "-o", "glow.tar.gz", release_url }
-  local extract_command = { "tar", "-zxf", "glow.tar.gz", "-C", M.config.glow_install_path }
+  local extract_command = { "tar", "-zxf", "glow.tar.gz", "-C", install_path }
   local output_filename = "glow.tar.gz"
+  local binary_path = install_path .. "/glow"
 
   -- check for existing files / folders
-  if vim.fn.isdirectory(M.config.glow_install_path) == 0 then
+  if vim.fn.isdirectory(install_path) == 0 then
     uv.fs_mkdir(M.config.install_path, "p")
   end
 
-  if vim.fn.empty(vim.fn.glob(M.config.glow_install_path .. "/glow")) ~= 1 then
-    local success = uv.fs_unlink(M.config.glow_install_path .. "/glow")
+  if vim.fn.empty(vim.fn.expand(binary_path)) ~= 1 then
+    local success = uv.fs_unlink(binary_path)
     if not success then
-      return api.nvim_err_writeln("Glow binary could not be removed!")
+      return utils.msg("glow binary could not be removed!")
     end
   end
 
@@ -37,15 +39,15 @@ local function install_glow()
   local callbacks = {
     on_sterr = vim.schedule_wrap(function(_, data, _)
       local out = table.concat(data, "\n")
-      api.nvim_err_writeln(out)
+      utils.msg(out)
     end),
-    on_exit = vim.schedule_wrap(function(_, _, _)
+    on_exit = vim.schedule_wrap(function()
       vim.fn.system(extract_command)
       -- remove the archive after completion
-      if vim.fn.empty(vim.fn.glob(output_filename)) ~= 1 then
+      if vim.fn.empty(output_filename) ~= 1 then
         local success = uv.fs_unlink(output_filename)
         if not success then
-          return api.nvim_err_writeln("existing archive could not be removed!")
+          return utils.msg("existing archive could not be removed!")
         end
       end
       print("glow installed successfully!")
@@ -55,47 +57,21 @@ local function install_glow()
   vim.fn.jobstart(download_command, callbacks)
 end
 
-local function validate(path)
-  if M.config.glow_path == "" then
-    print("glow not installed.. initiating installation..")
-    return install_glow()
-  end
-
-  -- trim and get the full path
-  path = vim.trim(path)
-  path = path == "" and "%" or path
-  path = vim.fn.expand(path)
-  path = vim.fn.fnamemodify(path, ":p")
-  local file_exists = vim.fn.filereadable(path) == 1
-
-  -- check if file exists
-  if not file_exists then
-    vim.notify("file does not exists", vim.log.levels.ERROR)
-    return
-  end
-
-  local ext = vim.fn.fnamemodify(path, ":e")
-  local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd" }
-  if not vim.tbl_contains(ext, allowed_exts) then
-    api.nvim_err_writeln("glow only support markdown files")
-    return
-  end
-
-  return path
-end
-
-function M.setup(params)
+M.setup = function(params)
   M.config = vim.tbl_extend("force", {}, M.config, params or {})
 end
 
-function M.close_window()
-  api.nvim_win_close(win, true)
+local function close_window()
+  local current_win = vim.fn.win_getid()
+  if current_win == win then
+    api.nvim_win_close(win, true)
+  end
 end
 
 -- open_window draws a custom window with the markdown contents
-local function open_window(path)
-  local width = api.nvim_get_option("columns")
-  local height = api.nvim_get_option("lines")
+local function open_window(cmd)
+  local width = vim.o.columns
+  local height = vim.o.lines
   local win_height = math.ceil(height * 0.8 - 4)
   local win_width = math.ceil(width * 0.8)
   local row = math.ceil((height - win_height) / 2 - 1)
@@ -105,7 +81,7 @@ local function open_window(path)
     win_width = M.config.width
   end
 
-  local opts = {
+  local win_opts = {
     style = "minimal",
     relative = "editor",
     width = win_width,
@@ -117,26 +93,17 @@ local function open_window(path)
 
   -- create preview buffer and set local options
   buf = api.nvim_create_buf(false, true)
-  win = api.nvim_open_win(buf, true, opts)
+  win = api.nvim_open_win(buf, true, win_opts)
 
+  -- options
   api.nvim_win_set_option(win, "winblend", 0)
   api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   api.nvim_buf_set_option(buf, "filetype", "glowpreview")
-  api.nvim_buf_set_keymap(buf, "n", "q", ":lua require('glow').close_window()<cr>", { noremap = true, silent = true })
-  api.nvim_buf_set_keymap(
-    buf,
-    "n",
-    "<Esc>",
-    ":lua require('glow').close_window()<cr>",
-    { noremap = true, silent = true }
-  )
 
-  local cmd = { M.config.glow_path, "-s " .. M.config.style }
-  if M.config.pager then
-    table.insert(cmd, "-p")
-  end
-  table.insert(cmd, vim.fn.shellescape(path))
-  cmd = table.concat(cmd, " ")
+  -- keymaps
+  local keymaps_opts = { noremap = true, silent = true, buffer = buf }
+  vim.keymap.set("n", "q", M.close_window, keymaps_opts)
+  vim.keymap.set("n", "<Esc>", M.close_window(), keymaps_opts)
   vim.fn.termopen(cmd)
 
   if M.config.pager then
@@ -144,17 +111,13 @@ local function open_window(path)
   end
 end
 
-function M.glow(file)
-  local current_win = vim.fn.win_getid()
-  if current_win == win then
-    M.close_window()
-  else
-    local path = validate(file)
-    if path == nil then
-      return
-    end
-    open_window(path)
+M.glow = function(opts)
+  if opts.bang then
+    close_window()
   end
+
+  local cmd = utils.get_glow_cmd(opts.fargs)
+  open_window(cmd)
 end
 
 return M
