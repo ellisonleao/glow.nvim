@@ -55,6 +55,10 @@ utils.msg = function(msg, level)
 end
 
 utils.get_glow_cmd = function(fargs)
+  if vim.tbl_isempty(fargs) then
+    error("please specify a file or stdin input")
+  end
+
   local cfg = require("glow").config
   local cmd = { cfg.glow_path, "-s " .. cfg.style }
 

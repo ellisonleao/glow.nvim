@@ -12,7 +12,8 @@ M.config = {
   style = vim.o.background,
   mouse = false,
   pager = false,
-  width = 80,
+  width = 100,
+  height = 100,
 }
 
 local function install_glow()
@@ -50,8 +51,8 @@ local function install_glow()
           return utils.msg("existing archive could not be removed!")
         end
       end
-      print("glow installed successfully!")
       M.config.glow_path = vim.fn.exepath("glow")
+      utils.msg("glow installed successfully!", vim.log.levels.INFO)
     end),
   }
   vim.fn.jobstart(download_command, callbacks)
@@ -72,13 +73,17 @@ end
 local function open_window(cmd)
   local width = vim.o.columns
   local height = vim.o.lines
-  local win_height = math.ceil(height * 0.8 - 4)
-  local win_width = math.ceil(width * 0.8)
+  local win_height = math.ceil(height * 0.5)
+  local win_width = math.ceil(width * 0.5)
   local row = math.ceil((height - win_height) / 2 - 1)
   local col = math.ceil((width - win_width) / 2)
 
   if M.config.width and M.config.width < win_width then
     win_width = M.config.width
+  end
+
+  if M.config.height and M.config.height < win_height then
+    win_height = M.config.height
   end
 
   local win_opts = {
@@ -102,8 +107,8 @@ local function open_window(cmd)
 
   -- keymaps
   local keymaps_opts = { noremap = true, silent = true, buffer = buf }
-  vim.keymap.set("n", "q", M.close_window, keymaps_opts)
-  vim.keymap.set("n", "<Esc>", M.close_window(), keymaps_opts)
+  vim.keymap.set("n", "q", close_window, keymaps_opts)
+  vim.keymap.set("n", "<Esc>", close_window, keymaps_opts)
   vim.fn.termopen(cmd)
 
   if M.config.pager then
@@ -114,10 +119,14 @@ end
 M.glow = function(opts)
   if opts.bang then
     close_window()
+    return
   end
 
-  local cmd = utils.get_glow_cmd(opts.fargs)
-  open_window(cmd)
+  local ok, output = pcall(utils.get_glow_cmd, opts.fargs)
+  if not ok then
+    return utils.msg(output)
+  end
+  open_window(output)
 end
 
 return M

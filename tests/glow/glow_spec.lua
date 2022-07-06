@@ -3,8 +3,6 @@ local glow = require("glow")
 local utils = require("glow.utils")
 
 describe("setup", function()
-
-
   it("setup with default configs", function()
     local expected = {
       glow_path = vim.fn.exepath("glow"),
@@ -13,7 +11,8 @@ describe("setup", function()
       style = vim.o.background,
       mouse = false,
       pager = false,
-      width = 80,
+      width = 100,
+      height = 100,
     }
     glow.setup()
     assert.are.same(glow.config, expected)
@@ -28,6 +27,7 @@ describe("setup", function()
       pager = true,
       mouse = false,
       width = 200,
+      height = 100,
     }
     glow.setup(expected)
     assert.are.same(glow.config, expected)
@@ -55,8 +55,9 @@ end)
 
 describe("utils.get_glow_cmd", function()
   it("file param should return correct cmd", function()
-    local expected = string.format("%s -s dark -p '%s'", glow.config.glow_path, "/tmp/README.md")
-    local fargs = { "/tmp/README.md" }
+    local tmpfile = vim.loop.cwd() .. "/tests/glow/TEST.md"
+    local expected = string.format("%s -s dark -p '%s'", glow.config.glow_path, tmpfile)
+    local fargs = { tmpfile }
     assert.are.same(utils.get_glow_cmd(fargs), expected)
   end)
 
