@@ -29,7 +29,9 @@ local function tmp_file()
 end
 
 local function stop_job()
-  if job_id == nil then return end
+  if job_id == nil then
+    return
+  end
   vim.fn.jobstop(job_id)
 end
 
