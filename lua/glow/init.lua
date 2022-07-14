@@ -17,6 +17,25 @@ local function close_window()
   vim.api.nvim_win_close(win, true)
 end
 
+local function merge_old_config()
+  local cfg = {
+    glow_path = vim.g.glow_binary_path ~= nil and vim.g.glow_binary_path or glow.config.glow_path,
+    style = vim.g.glow_style ~= nil and vim.g.glow_style or glow.config.style,
+    pager = vim.g.glow_use_pager ~= nil and vim.g.glow_use_pager or glow.config.pager,
+    width = vim.g.glow_width ~= nil and vim.g.glow_width or glow.config.width,
+    border = vim.g.glow_border ~= nil and vim.g.glow_border or glow.config.border,
+  }
+
+  for _, val in pairs({ "glow_binary_path", "glow_style", "glow_use_pager", "glow_width", "glow_border" }) do
+    if vim.g[val] ~= nil then
+      vim.notify_once("glow.nvim: old configs were merged in the new config system, please update your configuration using the new setup() function")
+      break
+    end
+  end
+
+  glow.config = vim.tbl_extend("force", {}, glow.config, cfg)
+end
+
 local function tmp_file()
   local output = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
   if vim.tbl_isempty(output) then
@@ -95,7 +114,7 @@ local function release_file_url()
 
   -- check pre-existence of required programs
   if vim.fn.executable("curl") == 0 or vim.fn.executable("tar") == 0 then
-    vim.notify("cURL and/or tar are required!")
+    vim.notify("cURL and/or tar are required!", vim.log.levels.ERROR)
     return
   end
 
@@ -124,7 +143,7 @@ local function release_file_url()
 
   -- win install not supported for now
   if os == "Windows" then
-    vim.notify("install script not supported on Windows yet. Please install glow manually")
+    vim.notify("install script not supported on Windows yet. Please install glow manually", vim.log.levels.WARN)
     return ""
   end
 
@@ -198,7 +217,7 @@ local function install_glow(opts)
   if vim.fn.filereadable(binary_path) == 1 then
     local success = vim.loop.fs_unlink(binary_path)
     if not success then
-      vim.notify("glow binary could not be removed!")
+      vim.notify("glow binary could not be removed!", vim.log.levels.ERROR)
       return
     end
   end
@@ -207,7 +226,7 @@ local function install_glow(opts)
   local callbacks = {
     on_sterr = vim.schedule_wrap(function(_, data, _)
       local out = table.concat(data, "\n")
-      vim.notify(out)
+      vim.notify(out, vim.log.levels.ERROR)
     end),
     on_exit = vim.schedule_wrap(function()
       vim.fn.system(extract_command)
@@ -215,7 +234,7 @@ local function install_glow(opts)
       if vim.fn.filereadable(output_filename) == 1 then
         local success = vim.loop.fs_unlink(output_filename)
         if not success then
-          return vim.notify("existing archive could not be removed!")
+          return vim.notify("existing archive could not be removed!", vim.log.levels.ERROR)
         end
       end
       glow.config.glow_path = binary_path
@@ -231,9 +250,12 @@ end
 
 glow.execute = function(opts)
   if vim.version().minor < 7 then
-    vim.notify_once("glow.nvim: you must use neovim 0.7 or higher")
+    vim.notify_once("glow.nvim: you must use neovim 0.7 or higher", vim.log.levels.ERROR)
     return
   end
+
+  -- TODO: disable this in next releases
+  merge_old_config()
 
   local current_win = vim.fn.win_getid()
   if current_win == win then
@@ -247,13 +269,6 @@ glow.execute = function(opts)
   if vim.fn.executable("glow") == 0 then
     install_glow(opts)
     return
-  end
-
-  if vim.g.glow_binary_path ~= nil then
-    vim.notify_once(
-      "glow.nvim: vim.g.glow_binary_path is removed. You can now remove it and use the new config system",
-      vim.log.levels.WARN
-    )
   end
 
   execute(opts)
