@@ -39,8 +39,9 @@ The script comes with the following defaults:
 ```lua
 {
   glow_path = "", -- filled automatically with your glow bin in $PATH,
+  glow_install_path = "~/.local/bin", -- default path for installing glow binary
   border = "shadow", -- floating window border config
-  style = "dark|light", -- filled automatically with your current editor background, you can override suing glow json style
+  style = "dark|light", -- filled automatically with your current editor background, you can override using glow json style
   pager = false,
   width = 80,
 }
@@ -65,20 +66,22 @@ require('glow').setup({
 
 ## Usage
 
+### Preview file
+
 ```
 :Glow [path-to-md-file]
 ```
 
-- No path arg means glow uses current path in vim
-- `:Glow` command will work as toogle feature, so calling it will open or close the current preview
-- Pressing `q` or `<Esc>` will automatically close the window
+### Preview current buffer
 
-You can also create a mapping getting a preview of the current file
-
-```viml
-noremap <leader>p :Glow<CR>
+```
+:Glow
 ```
 
-```lua
-vim.keymap.set("n", "<leader>p", "<Cmd>Glow<CR>",{ remap = false, silent = true })
+### Close window
+
 ```
+:Glow!
+```
+
+You can also close the floating window using `q` or `<Esc>` keys
