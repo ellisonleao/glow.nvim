@@ -245,8 +245,10 @@ glow.execute = function(opts)
   end
 
   if vim.g.glow_binary_path ~= nil then
-    vim.notify_once("glow.nvim: vim.g.glow_binary_path is removed. You can now remove it and use the new config system",
-      vim.log.levels.WARN)
+    vim.notify_once(
+      "glow.nvim: vim.g.glow_binary_path is removed. You can now remove it and use the new config system",
+      vim.log.levels.WARN
+    )
   end
 
   execute(opts)
