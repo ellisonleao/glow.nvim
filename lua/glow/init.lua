@@ -28,7 +28,9 @@ local function merge_old_config()
 
   for _, val in pairs({ "glow_binary_path", "glow_style", "glow_use_pager", "glow_width", "glow_border" }) do
     if vim.g[val] ~= nil then
-      vim.notify_once("glow.nvim: old configs were merged in the new config system, please update your configuration using the new setup() function")
+      vim.notify_once(
+        "glow.nvim: old configs were merged in the new config system, please update your configuration using the new setup() function"
+      )
       break
     end
   end
