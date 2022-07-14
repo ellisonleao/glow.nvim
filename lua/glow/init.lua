@@ -230,6 +230,11 @@ glow.setup = function(params)
 end
 
 glow.execute = function(opts)
+  if vim.version().minor < 7 then
+    vim.notify_once("glow.nvim: you must use neovim 0.7 or higher")
+    return
+  end
+
   local current_win = vim.fn.win_getid()
   if current_win == win then
     if opts.bang then
