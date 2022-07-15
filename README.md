@@ -1,10 +1,24 @@
-# glow.nvim
+<h1 align="center">
+  <img src="https://i.postimg.cc/Y9Z030zC/glow-nvim.jpg" />
+</h1>
 
-A [glow](https://github.com/charmbracelet/glow) preview directly in your neovim buffer.
+<div align="center">
+  <p>
+    <strong>Preview markdown code directly in your neovim terminal</strong><br/>
+    <small>Powered by charm's <a href="https://github.com/charmbracelet/glow">glow</a></small>
+  </p>
+  <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
+  <img src="https://img.shields.io/github/workflow/status/ellisonleao/glow.nvim/default?style=for-the-badge" />
+  <p>
+  <img src="https://i.postimg.cc/rynmX2X8/glow.gif" />
+  </p>
+</div>
+
+**Breaking changes are now moved to a fixed topic in Discussions. [Click here](https://github.com/ellisonleao/glow.nvim/discussions/77) to see them**
 
 ## Prerequisites
 
-- Neovim 0.5 or higher
+- Neovim 0.7+
 
 ## Installing
 
@@ -20,123 +34,56 @@ with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 use {"ellisonleao/glow.nvim", branch = 'main'}
 ```
 
-## Configuration
+## Setup
 
-- `glow_binary_path`
+The script comes with the following defaults:
 
-Use `g:glow_binary_path` for vimscript config or `vim.g.glow_binary_path` for lua config.
+```lua
+{
+  glow_path = "", -- filled automatically with your glow bin in $PATH,
+  glow_install_path = "~/.local/bin", -- default path for installing glow binary
+  border = "shadow", -- floating window border config
+  style = "dark|light", -- filled automatically with your current editor background, you can override using glow json style
+  pager = false,
+  width = 80,
+}
+```
 
-If set, this path will be used to execute `glow`. Otherwise rely on `$PATH`.
+To override the custom configuration, call:
 
-If `glow` is not on `$PATH` or `glow_binary_path` is set and `glow` is not found
-there, this path will be used to download the `glow` executable. It defaults to `$HOME/.local/bin`.
+```lua
+require('glow').setup({
+    -- your override config
+})
+```
 
 Example:
 
-```viml
-let g:glow_binary_path = $HOME . "/bin"
-```
-
 ```lua
-vim.g.glow_binary_path = vim.env.HOME .. "/bin"
+require('glow').setup({
+  style = "dark",
+  width = 120,
+})
 ```
 
-- `glow_border`
-
-Use `g:glow_border` for vimscript config or `vim.g.glow_border` for lua config.
-
-If set, this will change the border of the window. Type `:help nvim_open_win` for border options.
-
-Example:
-
-```viml
-let g:glow_border = "rounded"
-```
-
-```lua
-vim.g.glow_border = "rounded"
-```
-
-- `glow_width`
-
-Use `g:glow_width` for vimscript config or `vim.g.glow_width` for lua config.
-
-If set, this will change the width of the window.
-
-Example:
-
-```viml
-let g:glow_width = 120
-```
-
-```lua
-vim.g.glow_width = 120
-```
-
-- `glow_use_pager`
-
-Use `g:glow_use_pager` for vimscript config or `vim.g.glow_use_pager` for lua config.
-
-If set true, `glow` uses the pager to show the doc.
-
-Example:
-
-```viml
-let g:glow_use_pager = v:true
-```
-
-```lua
-vim.g.glow_use_pager = true
-```
-
-- `glow_style`
-
-Use `g:glow_style` for vimscript config or `vim.g.glow_style` for lua config.
-
-If set, this will change the output style to either `dark` (default) or `light`.
-
-Example:
-
-```viml
-let g:glow_style = "light"
-```
-
-```lua
-vim.g.glow_style = "light"
-```
 ## Usage
 
-```
-:GlowInstall
-```
-
-This will install the `glow` dependency into `g:glow_binary_path` or `$HOME/.local/bin` if not defined.
+### Preview file
 
 ```
 :Glow [path-to-md-file]
 ```
 
-- Pressing `q` will automatically close the window
-- No path arg means glow uses current path in vim
-- `:Glow` command will work as a toggle feature, so calling it will open or close the current preview
+### Preview current buffer
 
-You can also create a mapping getting a preview of the current file
-
-```viml
-noremap <leader>p :Glow<CR>
+```
+:Glow
 ```
 
-For users who want to make glow.nvim buffer fullscreen, there's a native vim keybinding
+### Close window
 
-- `Ctrl-w + |` set window's width max
-- `Ctrl-w + _` set window's height max
-
-Or you can have a fullscreen option by creating a mapping for setting both window's height and width max at once
-
-```viml
-noremap <C-w>z <C-w>\|<C-w>\_
+```
+:Glow!
 ```
 
-## Screenshot
-
-![](https://i.postimg.cc/rynmX2X8/glow.gif)
+You can also close the floating window using `q` or `<Esc>` keys
