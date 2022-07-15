@@ -14,6 +14,8 @@
   </p>
 </div>
 
+**Breaking changes are now moved to a fixed topic in Discussions. [Click here](https://github.com/ellisonleao/glow.nvim/discussions/77) to see them**
+
 ## Prerequisites
 
 - Neovim 0.7+
