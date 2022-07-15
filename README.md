@@ -9,10 +9,9 @@
   </p>
   <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
   <img src="https://img.shields.io/github/workflow/status/ellisonleao/glow.nvim/default?style=for-the-badge" />
-  <p>
-  <img src="https://i.postimg.cc/rynmX2X8/glow.gif" />
-  </p>
 </div>
+
+https://user-images.githubusercontent.com/178641/179131739-36ca2225-9a9e-4894-924e-9e03211c0886.mp4
 
 **Breaking changes are now moved to a fixed topic in Discussions. [Click here](https://github.com/ellisonleao/glow.nvim/discussions/77) to see them**
 
@@ -25,13 +24,13 @@
 with [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
-Plug 'ellisonleao/glow.nvim', {'branch': 'main'}
+Plug 'ellisonleao/glow.nvim'
 ```
 
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```
-use {"ellisonleao/glow.nvim", branch = 'main'}
+use {"ellisonleao/glow.nvim"}
 ```
 
 ## Setup
@@ -53,7 +52,7 @@ To override the custom configuration, call:
 
 ```lua
 require('glow').setup({
-    -- your override config
+  -- your override config
 })
 ```
 
