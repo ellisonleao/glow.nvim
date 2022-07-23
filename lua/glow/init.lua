@@ -171,7 +171,7 @@ local function execute(opts)
       return
     end
   else
-    if vim.bo.filetype ~= "markdown" then
+    if not vim.bo.filetype:match("^markdown") then
       vim.notify("preview only works on markdown files", vim.log.levels.ERROR)
       return
     end
