@@ -156,7 +156,7 @@ end
 
 local function execute(opts)
   local file, tmp
-  if not vim.tbl_isempty(opts.fargs) then
+  if not vim.tbl_isempty(opts.fargs) and table.concat(opts.fargs, " ") ~= "" then
     -- check file
     file = opts.fargs[1]
     if not vim.fn.filereadable(file) then
