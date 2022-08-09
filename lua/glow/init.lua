@@ -134,6 +134,7 @@ local function release_file_url()
     ["x86"] = "i386",
     ["x64"] = "x86_64",
     ["arm"] = "arm7",
+    ["arm64"] = "arm64",
   }
 
   os = os_patterns[raw_os]
