@@ -59,8 +59,8 @@ end
 local function open_window(cmd, tmp)
   local width = vim.o.columns
   local height = vim.o.lines
-  local win_height = math.ceil(height * 0.7)
-  local win_width = math.ceil(width * 0.7)
+  local win_height = math.ceil(height * 0.8)
+  local win_width = math.ceil(width * 0.9)
   local row = math.ceil((height - win_height) / 2 - 1)
   local col = math.ceil((width - win_width) / 2)
 
