@@ -62,7 +62,7 @@ local function open_window(cmd, tmp)
   local win_height = math.ceil(height * 0.8)
   local win_width = math.ceil(width * 0.9)
   local row = math.ceil((height - win_height) / 2 - 1)
-  local col = math.ceil((width - win_width) / 2 + 1)
+  local col = math.ceil((width - win_width) / 2)
 
   if glow.config.width and glow.config.width < win_width then
     win_width = glow.config.width
