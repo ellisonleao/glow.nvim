@@ -82,6 +82,13 @@ local function open_window(cmd, tmp)
     border = glow.config.border,
   }
 
+  ----------------------------------------------------------------------------------------
+  -- Debug
+  ----------------------------------------------------------------------------------------
+  vim.pretty_print(win_opts)
+
+  ----------------------------------------------------------------------------------------
+
   -- create preview buffer and set local options
   buf = vim.api.nvim_create_buf(false, true)
   win = vim.api.nvim_open_win(buf, true, win_opts)
