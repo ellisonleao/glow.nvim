@@ -120,7 +120,8 @@ local function release_file_url()
     return
   end
 
-  local raw_os = jit.os
+  -- local raw_os = jit.os
+  local raw_os = vim.loop.os_uname().sysname
   local raw_arch = jit.arch
   local os_patterns = {
     ["Windows"] = "Windows",
@@ -133,6 +134,7 @@ local function release_file_url()
     ["x86"] = "i386",
     ["x64"] = "x86_64",
     ["arm"] = "arm7",
+    ["arm64"] = "arm64",
   }
 
   os = os_patterns[raw_os]
