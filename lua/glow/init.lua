@@ -156,6 +156,22 @@ local function release_file_url()
   return "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
 end
 
+local function is_md_ft()
+  local allowed_fts = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki" }
+  if not vim.tbl_contains(allowed_fts, vim.bo.filetype) then
+    return false
+  end
+  return true
+end
+
+local function is_md_ext(ext)
+  local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" }
+  if not vim.tbl_contains(allowed_exts, ext) then
+    return false
+  end
+  return true
+end
+
 local function execute(opts)
   local file, tmp
   if not vim.tbl_isempty(opts.fargs) then
@@ -167,13 +183,12 @@ local function execute(opts)
     end
 
     local ext = vim.fn.fnamemodify(file, ":e")
-    local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd" }
-    if not vim.tbl_contains(allowed_exts, ext) then
+    if not is_md_ext(ext) then
       vim.notify("preview only works on markdown files", vim.log.levels.ERROR)
       return
     end
   else
-    if vim.bo.filetype ~= "markdown" then
+    if not is_md_ft() then
       vim.notify("preview only works on markdown files", vim.log.levels.ERROR)
       return
     end
@@ -188,14 +203,14 @@ local function execute(opts)
 
   stop_job()
 
-  local cmd = { glow.config.glow_path, "-s " .. glow.config.style }
+  local cmd_args = { glow.config.glow_path, "-s " .. glow.config.style }
 
   if glow.config.pager then
-    table.insert(cmd, "-p")
+    table.insert(cmd_args, "-p")
   end
 
-  table.insert(cmd, file)
-  cmd = table.concat(cmd, " ")
+  table.insert(cmd_args, file)
+  local cmd = table.concat(cmd_args, " ")
   open_window(cmd, tmp)
 end
 
