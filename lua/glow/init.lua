@@ -157,7 +157,7 @@ local function release_file_url()
 end
 
 local function is_md_ft()
-  local allowed_fts = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki" }
+  local allowed_fts = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki", "telekasten" }
   if not vim.tbl_contains(allowed_fts, vim.bo.filetype) then
     return false
   end
