@@ -17,27 +17,6 @@ local function close_window()
   vim.api.nvim_win_close(win, true)
 end
 
-local function merge_old_config()
-  local cfg = {
-    glow_path = vim.g.glow_binary_path ~= nil and vim.g.glow_binary_path or glow.config.glow_path,
-    style = vim.g.glow_style ~= nil and vim.g.glow_style or glow.config.style,
-    pager = vim.g.glow_use_pager ~= nil and vim.g.glow_use_pager or glow.config.pager,
-    width = vim.g.glow_width ~= nil and vim.g.glow_width or glow.config.width,
-    border = vim.g.glow_border ~= nil and vim.g.glow_border or glow.config.border,
-  }
-
-  for _, val in pairs({ "glow_binary_path", "glow_style", "glow_use_pager", "glow_width", "glow_border" }) do
-    if vim.g[val] ~= nil then
-      vim.notify_once(
-        "glow.nvim: old configs were merged in the new config system, please update your configuration using the new setup() function"
-      )
-      break
-    end
-  end
-
-  glow.config = vim.tbl_extend("force", {}, glow.config, cfg)
-end
-
 local function tmp_file()
   local output = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
   if vim.tbl_isempty(output) then
@@ -141,7 +120,7 @@ local function release_file_url()
   arch = arch_patterns[raw_arch]
 
   if os == nil or arch == nil then
-    vim.notify("OS not supported")
+    vim.notify("OS not supported", vim.log.levels.ERROR)
     return ""
   end
 
@@ -174,6 +153,19 @@ end
 
 local function execute(opts)
   local file, tmp
+
+  -- check if glow binary is valid even if filled in config
+  if vim.fn.executable(glow.config.glow_path) == 0 then
+    vim.notify(
+      string.format(
+        "could not execute glow binary in path=%s . make sure you have the right config",
+        glow.config.glow_path
+      ),
+      vim.log.levels.ERROR
+    )
+    return
+  end
+
   if not vim.tbl_isempty(opts.fargs) then
     -- check file
     file = opts.fargs[1]
@@ -263,6 +255,14 @@ local function install_glow(opts)
   vim.fn.jobstart(download_command, callbacks)
 end
 
+local function get_executable()
+  if glow.config.glow_path ~= "" then
+    return glow.config.glow_path
+  end
+
+  return vim.fn.exepath("glow")
+end
+
 glow.setup = function(params)
   glow.config = vim.tbl_extend("force", {}, glow.config, params or {})
 end
@@ -273,9 +273,6 @@ glow.execute = function(opts)
     return
   end
 
-  -- TODO: disable this in next releases
-  merge_old_config()
-
   local current_win = vim.fn.win_getid()
   if current_win == win then
     if opts.bang then
@@ -285,7 +282,7 @@ glow.execute = function(opts)
     return
   end
 
-  if vim.fn.executable("glow") == 0 then
+  if get_executable() == "" then
     install_glow(opts)
     return
   end
