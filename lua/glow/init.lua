@@ -166,7 +166,9 @@ local function execute(opts)
     return
   end
 
-  if not vim.tbl_isempty(opts.fargs) then
+  local filename = opts.fargs[1]
+
+  if filename ~= nil and filename ~= "" then
     -- check file
     file = opts.fargs[1]
     if not vim.fn.filereadable(file) then
