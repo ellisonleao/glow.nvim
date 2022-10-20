@@ -38,8 +38,10 @@ end
 local function open_window(cmd, tmp)
   local width = vim.o.columns
   local height = vim.o.lines
-  local win_height = math.ceil(height * 0.7)
-  local win_width = math.ceil(width * 0.7)
+  local height_ratio = glow.config.height_ratio or 0.7
+  local width_ratio = glow.config.width_ratio or 0.7
+  local win_height = math.ceil(height * height_ratio)
+  local win_width = math.ceil(width * width_ratio)
   local row = math.ceil((height - win_height) / 2 - 1)
   local col = math.ceil((width - win_width) / 2)
 
