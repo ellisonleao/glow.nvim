@@ -145,7 +145,7 @@ end
 
 local function is_md_ext(ext)
   local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" }
-  if not vim.tbl_contains(allowed_exts, ext) then
+  if not vim.tbl_contains(allowed_exts, string.lower(ext)) then
     return false
   end
   return true
