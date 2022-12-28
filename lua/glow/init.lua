@@ -106,6 +106,7 @@ local function release_file_url()
   local raw_arch = jit.arch
   local os_patterns = {
     ["Windows"] = "Windows",
+    ["Windows_NT"] = "Windows",
     ["Linux"] = "linux",
     ["Darwin"] = "Darwin",
     ["BSD"] = "freebsd",
@@ -126,14 +127,8 @@ local function release_file_url()
     return ""
   end
 
-  -- win install not supported for now
-  if os == "Windows" then
-    vim.notify("install script not supported on Windows yet. Please install glow manually", vim.log.levels.WARN)
-    return ""
-  end
-
   -- create the url, filename based on os, arch, version
-  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. ".tar.gz"
+  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. (os == "Windows" and ".zip" or ".tar.gz")
   return "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
 end
 
