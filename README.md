@@ -8,7 +8,8 @@
     <small>Powered by charm's <a href="https://github.com/charmbracelet/glow">glow</a></small>
   </p>
   <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
-  <img src="https://img.shields.io/github/workflow/status/ellisonleao/glow.nvim/default?style=for-the-badge" />
+  <img src="https://img.shields.io/github/actions/workflow/status/ellisonleao/glow.nvim/default.yml?style=for-the-badge" />
+  
 </div>
 
 https://user-images.githubusercontent.com/178641/179131739-36ca2225-9a9e-4894-924e-9e03211c0886.mp4
