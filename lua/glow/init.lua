@@ -73,18 +73,26 @@ local function open_window(cmd, tmp)
   vim.api.nvim_buf_set_option(buf, "filetype", "glowpreview")
 
   -- keymaps
-  local keymaps_opts = { noremap = true, silent = true, buffer = buf }
+  local keymaps_opts = { silent = true, buffer = buf }
   vim.keymap.set("n", "q", close_window, keymaps_opts)
   vim.keymap.set("n", "<Esc>", close_window, keymaps_opts)
 
   local cbs = {
-    on_exit = function()
+    on_input = function()
       if tmp ~= nil then
         vim.fn.delete(tmp)
       end
     end,
   }
-  job_id = vim.fn.termopen(cmd, cbs)
+
+  local chan = vim.api.nvim_open_term(buf, cbs)
+  vim.fn.jobstart(cmd, {
+    on_stdout = function(_, data, _)
+      for _, d in ipairs(data) do
+        vim.api.nvim_chan_send(chan, d .. "\r\n")
+      end
+    end,
+  })
 
   if glow.config.pager then
     vim.cmd("startinsert")
