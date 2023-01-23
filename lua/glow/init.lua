@@ -270,8 +270,15 @@ local function get_executable()
   return vim.fn.exepath("glow")
 end
 
+local function create_autocmds()
+  vim.api.nvim_create_user_command("Glow", function(opts)
+    require("glow").execute(opts)
+  end, { complete = "file", nargs = "*", bang = true })
+end
+
 glow.setup = function(params)
   glow.config = vim.tbl_extend("force", {}, glow.config, params or {})
+  create_autocmds()
 end
 
 glow.execute = function(opts)
