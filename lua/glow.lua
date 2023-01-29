@@ -13,7 +13,16 @@ glow.config = {
   height = 100,
 }
 
+local function stop_job()
+  if job_id == nil then
+    return
+  end
+  vim.fn.jobstop(job_id)
+  job_id = nil
+end
+
 local function close_window()
+  stop_job()
   vim.api.nvim_win_close(win, true)
 end
 
@@ -26,13 +35,6 @@ local function tmp_file()
   local tmp = vim.fn.tempname() .. ".md"
   vim.fn.writefile(output, tmp)
   return tmp
-end
-
-local function stop_job()
-  if job_id == nil then
-    return
-  end
-  vim.fn.jobstop(job_id)
 end
 
 local function open_window(cmd, tmp)
@@ -86,7 +88,7 @@ local function open_window(cmd, tmp)
   }
 
   local chan = vim.api.nvim_open_term(buf, cbs)
-  vim.fn.jobstart(cmd, {
+  job_id = vim.fn.jobstart(cmd, {
     on_stdout = function(_, data, _)
       for _, d in ipairs(data) do
         vim.api.nvim_chan_send(chan, d .. "\r\n")
@@ -209,8 +211,7 @@ local function execute(opts)
   end
 
   table.insert(cmd_args, file)
-  local cmd = table.concat(cmd_args, " ")
-  open_window(cmd, tmp)
+  open_window(table.concat(cmd_args, " "), tmp)
 end
 
 local function install_glow(opts)
@@ -272,7 +273,7 @@ end
 
 local function create_autocmds()
   vim.api.nvim_create_user_command("Glow", function(opts)
-    require("glow").execute(opts)
+    glow.execute(opts)
   end, { complete = "file", nargs = "*", bang = true })
 end
 

@@ -26,12 +26,21 @@ with [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
 Plug 'ellisonleao/glow.nvim'
+lua EOF <<
+require('glow').setup()
+EOF
 ```
 
 with [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
+```lua
+use {"ellisonleao/glow.nvim", config = function() require("glow").setup() end}
 ```
-use {"ellisonleao/glow.nvim"}
+
+with [lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+{"ellisonleao/glow.nvim", config = true, cmd = "Glow"}
 ```
 
 ## Setup
