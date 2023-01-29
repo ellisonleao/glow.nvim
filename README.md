@@ -12,7 +12,10 @@
   
 </div>
 
-https://user-images.githubusercontent.com/178641/179131739-36ca2225-9a9e-4894-924e-9e03211c0886.mp4
+
+
+https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89a2-0f286e3b6441.mp4
+
 
 **Breaking changes are now moved to a fixed topic in Discussions. [Click here](https://github.com/ellisonleao/glow.nvim/discussions/77) to see them**
 
