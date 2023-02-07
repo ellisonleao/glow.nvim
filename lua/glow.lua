@@ -23,7 +23,6 @@ local function stop_job()
   if job_id == nil then
     return
   end
-  -- print("stopping job: " .. vim.inspect(job_id))
   vim.fn.jobstop(job_id)
   job_id = nil
 end
@@ -94,25 +93,6 @@ local function open_window(cmd)
   }
 
   job_id = vim.fn.termopen(cmd, term_opts)
-
-  -- local chan = vim.api.nvim_open_term(buf, {})
-  -- print("command for job: " .. vim.inspect(cmd))
-  -- print("starting job to communicate on channel: " .. vim.inspect(chan))
-  -- job_id = vim.fn.jobstart(cmd, {
-  --   on_stdout = function(_, data, name)
-      -- print("[" .. vim.inspect(name) .."] data before iter: " .. vim.inspect(data))
-  --     for _, d in ipairs(data) do
-        -- print("[" .. vim.inspect(name) .."] sending on channel: " .. vim.inspect(chan))
-        -- print("[" .. vim.inspect(name) .."] sending data: " .. vim.inspect(d))
-   --      vim.api.nvim_chan_send(chan, d .. "\r\n")
-   --    end
-   --  end,
-   --  on_exit = function(job_id, code, _)
-   --    print("job " .. vim.inspect(job_id) .. " exited w/ code: " .. vim.inspect(code))
-   --  end,
-   --  pty = true,
-  -- })
-  -- print("job started: " .. vim.inspect(job_id))
 
   if glow.config.pager then
     vim.cmd("startinsert")
