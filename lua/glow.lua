@@ -1,4 +1,4 @@
-local win, buf, job_id
+local win, buf, job_id, tmpfile
 local glow = {}
 
 -- default configs
@@ -13,17 +13,24 @@ glow.config = {
   height = 100,
 }
 
+local function cleanup()
+  if tmpfile ~= nil then
+    vim.fn.delete(tmpfile)
+  end
+end
+
 local function stop_job()
   if job_id == nil then
     return
   end
-  print("stopping job: " .. vim.inspect(job_id))
+  -- print("stopping job: " .. vim.inspect(job_id))
   vim.fn.jobstop(job_id)
   job_id = nil
 end
 
 local function close_window()
   stop_job()
+  cleanup()
   vim.api.nvim_win_close(win, true)
 end
 
@@ -38,7 +45,7 @@ local function tmp_file()
   return tmp
 end
 
-local function open_window(cmd, tmp)
+local function open_window(cmd)
   local width = vim.o.columns
   local height = vim.o.lines
   local height_ratio = glow.config.height_ratio or 0.7
@@ -80,31 +87,32 @@ local function open_window(cmd, tmp)
   vim.keymap.set("n", "q", close_window, keymaps_opts)
   vim.keymap.set("n", "<Esc>", close_window, keymaps_opts)
 
-  local cbs = {
-    on_input = function()
-      if tmp ~= nil then
-        vim.fn.delete(tmp)
-      end
-    end,
+  local term_opts = {
+    on_exit = cleanup,
+    width = win_width,
+    height = win_height,
   }
 
-  local chan = vim.api.nvim_open_term(buf, cbs)
-  print("command for job: " .. vim.inspect(cmd))
-  print("starting job to communicate on channel: " .. vim.inspect(chan))
-  job_id = vim.fn.jobstart(cmd, {
-    on_stdout = function(_, data, name)
-      print("[" .. vim.inspect(name) .."] data before iter: " .. vim.inspect(data))
-      for _, d in ipairs(data) do
-        print("[" .. vim.inspect(name) .."] sending on channel: " .. vim.inspect(chan))
-        print("[" .. vim.inspect(name) .."] sending data: " .. vim.inspect(d))
-        vim.api.nvim_chan_send(chan, d .. "\r\n")
-      end
-    end,
-    on_exit = function(job_id, code, _)
-      print("job " .. vim.inspect(job_id) .. " exited w/ code: " .. vim.inspect(code))
-    end,
-  })
-  print("job started: " .. vim.inspect(job_id))
+  job_id = vim.fn.termopen(cmd, term_opts)
+
+  -- local chan = vim.api.nvim_open_term(buf, {})
+  -- print("command for job: " .. vim.inspect(cmd))
+  -- print("starting job to communicate on channel: " .. vim.inspect(chan))
+  -- job_id = vim.fn.jobstart(cmd, {
+  --   on_stdout = function(_, data, name)
+      -- print("[" .. vim.inspect(name) .."] data before iter: " .. vim.inspect(data))
+  --     for _, d in ipairs(data) do
+        -- print("[" .. vim.inspect(name) .."] sending on channel: " .. vim.inspect(chan))
+        -- print("[" .. vim.inspect(name) .."] sending data: " .. vim.inspect(d))
+   --      vim.api.nvim_chan_send(chan, d .. "\r\n")
+   --    end
+   --  end,
+   --  on_exit = function(job_id, code, _)
+   --    print("job " .. vim.inspect(job_id) .. " exited w/ code: " .. vim.inspect(code))
+   --  end,
+   --  pty = true,
+  -- })
+  -- print("job started: " .. vim.inspect(job_id))
 
   if glow.config.pager then
     vim.cmd("startinsert")
@@ -169,7 +177,7 @@ local function is_md_ext(ext)
 end
 
 local function execute(opts)
-  local file, tmp
+  local file
 
   -- check if glow binary is valid even if filled in config
   if vim.fn.executable(glow.config.glow_path) == 0 then
@@ -209,7 +217,7 @@ local function execute(opts)
       vim.notify("error on preview for current buffer", vim.log.levels.ERROR)
       return
     end
-    tmp = file
+    tmpfile = file
   end
 
   stop_job()
