@@ -29,7 +29,7 @@ with [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
 Plug 'ellisonleao/glow.nvim'
-lua EOF <<
+lua << EOF
 require('glow').setup()
 EOF
 ```
