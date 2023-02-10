@@ -87,14 +87,17 @@ local function open_window(cmd, tmp)
     end,
   }
 
-  local chan = vim.api.nvim_open_term(buf, cbs)
-  job_id = vim.fn.jobstart(cmd, {
-    on_stdout = function(_, data, _)
-      for _, d in ipairs(data) do
-        vim.api.nvim_chan_send(chan, d .. "\r\n")
-      end
-    end,
-  })
+  if vim.loop.os_uname().sysname:find('Windows') then
+    job_id = vim.fn.termopen(cmd, cbs)
+  else
+    job_id = vim.fn.jobstart(cmd, {
+      on_stdout = function(_, data, _)
+        for _, d in ipairs(data) do
+          vim.api.nvim_chan_send(chan, d .. "\r\n")
+        end
+      end,
+    })
+  end
 
   if glow.config.pager then
     vim.cmd("startinsert")
