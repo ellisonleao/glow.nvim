@@ -87,7 +87,7 @@ local function open_window(cmd, tmp)
     end,
   }
 
-  if vim.loop.os_uname().sysname:find('Windows') then
+  if vim.loop.os_uname().sysname:find("Windows") then
     job_id = vim.fn.termopen(cmd, cbs)
   else
     local chan = vim.api.nvim_open_term(buf, cbs)
