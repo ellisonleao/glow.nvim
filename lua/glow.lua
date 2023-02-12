@@ -44,7 +44,7 @@ local function tmp_file()
   return tmp
 end
 
-local function open_window(cmd)
+local function open_window(cmd_args)
   local width = vim.o.columns
   local height = vim.o.lines
   local height_ratio = glow.config.height_ratio or 0.7
@@ -61,6 +61,10 @@ local function open_window(cmd)
   if glow.config.height and glow.config.height < win_height then
     win_height = glow.config.height
   end
+
+  -- pass through calculated window width
+  table.insert(cmd_args, "-w")
+  table.insert(cmd_args, win_width)
 
   local win_opts = {
     style = "minimal",
@@ -86,13 +90,40 @@ local function open_window(cmd)
   vim.keymap.set("n", "q", close_window, keymaps_opts)
   vim.keymap.set("n", "<Esc>", close_window, keymaps_opts)
 
-  local term_opts = {
-    on_exit = cleanup,
-    width = win_width,
-    height = win_height,
-  }
+  local chan = vim.api.nvim_open_term(buf, {})
+  local function on_output(err, data)
+    if err then
+      -- what should we really do here?
+      print("[ERROR] "..vim.inspect(err))
+    end
+    if data then
+      local lines = vim.split(data, "\n")
+      for _, d in ipairs(lines) do
+        vim.api.nvim_chan_send(chan, d.."\r\n")
+      end
+    end
+  end
+  local function on_completion()
+    cleanup()
+  end
 
-  job_id = vim.fn.termopen(cmd, term_opts)
+  local stdout = vim.loop.new_pipe(false)
+  local stderr = vim.loop.new_pipe(false)
+  handle = vim.loop.spawn(table.remove(cmd_args, 1), {
+    args = cmd_args,
+    stdio = {nil, stdout, stderr}
+  },
+  vim.schedule_wrap(function()
+      stdout:read_stop()
+      stderr:read_stop()
+      stdout:close()
+      stderr:close()
+      handle:close()
+      on_completion()
+    end)
+  )
+  vim.loop.read_start(stdout, vim.schedule_wrap(on_output))
+  vim.loop.read_start(stderr, vim.schedule_wrap(on_output))
 
   if glow.config.pager then
     vim.cmd("startinsert")
@@ -202,14 +233,14 @@ local function execute(opts)
 
   stop_job()
 
-  local cmd_args = { glow.config.glow_path, "-s " .. glow.config.style }
+  local cmd_args = { glow.config.glow_path, "-s", glow.config.style }
 
   if glow.config.pager then
     table.insert(cmd_args, "-p")
   end
 
   table.insert(cmd_args, file)
-  open_window(table.concat(cmd_args, " "), tmp)
+  open_window(cmd_args)
 end
 
 local function install_glow(opts)
