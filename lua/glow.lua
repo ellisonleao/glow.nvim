@@ -22,7 +22,7 @@ end
 
 local function safe_close(h)
   if not h:is_closing() then
-      h:close()
+    h:close()
   end
 end
 
@@ -114,12 +114,12 @@ local function open_window(cmd_args)
   local function on_output(err, data)
     if err then
       -- what should we really do here?
-      print("[Glow Error] "..vim.inspect(err))
+      print("[Glow Error] " .. vim.inspect(err))
     end
     if data then
       local lines = vim.split(data, "\n")
       for _, d in ipairs(lines) do
-        vim.api.nvim_chan_send(chan, d.."\r\n")
+        vim.api.nvim_chan_send(chan, d .. "\r\n")
       end
     end
   end
@@ -139,7 +139,7 @@ local function open_window(cmd_args)
   local cmd = table.remove(cmd_args, 1)
   local job_opts = {
     args = cmd_args,
-    stdio = {nil, job.stdout, job.stderr},
+    stdio = { nil, job.stdout, job.stderr },
   }
 
   job.handle = vim.loop.spawn(cmd, job_opts, vim.schedule_wrap(on_exit))
