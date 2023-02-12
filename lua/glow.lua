@@ -1,4 +1,4 @@
-local win, buf, job_id, tmpfile
+local win, buf, job_handle, tmpfile
 local glow = {}
 
 -- default configs
@@ -19,12 +19,18 @@ local function cleanup()
   end
 end
 
+local function safe_close(h)
+  if not h:is_closing() then
+      h:close()
+  end
+end
+
 local function stop_job()
-  if job_id == nil then
+  if job_handle == nil then
     return
   end
-  vim.fn.jobstop(job_id)
-  job_id = nil
+  safe_close(job_handle)
+  job_handle = nil
 end
 
 local function close_window()
@@ -90,11 +96,14 @@ local function open_window(cmd_args)
   vim.keymap.set("n", "q", close_window, keymaps_opts)
   vim.keymap.set("n", "<Esc>", close_window, keymaps_opts)
 
+  -- term to receive data
   local chan = vim.api.nvim_open_term(buf, {})
+
+  -- callback for handling output from process
   local function on_output(err, data)
     if err then
       -- what should we really do here?
-      print("[ERROR] "..vim.inspect(err))
+      print("[Glow Error] "..vim.inspect(err))
     end
     if data then
       local lines = vim.split(data, "\n")
@@ -103,25 +112,29 @@ local function open_window(cmd_args)
       end
     end
   end
-  local function on_completion()
+
+  -- setup pipes
+  local stdout = vim.loop.new_pipe(false)
+  local stderr = vim.loop.new_pipe(false)
+
+  -- callback when process completes
+  local function on_exit()
+    stdout:read_stop()
+    stderr:read_stop()
+    safe_close(stdout)
+    safe_close(stderr)
+    stop_job()
     cleanup()
   end
 
-  local stdout = vim.loop.new_pipe(false)
-  local stderr = vim.loop.new_pipe(false)
-  handle = vim.loop.spawn(table.remove(cmd_args, 1), {
+  -- setup and kickoff process
+  local cmd = table.remove(cmd_args, 1)
+  local job_opts = {
     args = cmd_args,
-    stdio = {nil, stdout, stderr}
-  },
-  vim.schedule_wrap(function()
-      stdout:read_stop()
-      stderr:read_stop()
-      stdout:close()
-      stderr:close()
-      handle:close()
-      on_completion()
-    end)
-  )
+    stdio = {nil, stdout, stderr},
+  }
+
+  job_handle = vim.loop.spawn(cmd, job_opts, vim.schedule_wrap(on_exit))
   vim.loop.read_start(stdout, vim.schedule_wrap(on_output))
   vim.loop.read_start(stderr, vim.schedule_wrap(on_output))
 
