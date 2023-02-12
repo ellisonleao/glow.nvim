@@ -1,4 +1,5 @@
-local win, buf, job_handle, tmpfile
+local win, buf, tmpfile
+local job = {}
 local glow = {}
 
 -- default configs
@@ -26,11 +27,21 @@ local function safe_close(h)
 end
 
 local function stop_job()
-  if job_handle == nil then
+  if job == nil then
     return
   end
-  safe_close(job_handle)
-  job_handle = nil
+  if not job.stdout == nil then
+    job.stdout:read_stop()
+    safe_close(job.stdout)
+  end
+  if not job.stderr == nil then
+    job.stderr:read_stop()
+    safe_close(job.stderr)
+  end
+  if not job.handle == nil then
+    safe_close(handle)
+  end
+  job = nil
 end
 
 local function close_window()
@@ -114,15 +125,12 @@ local function open_window(cmd_args)
   end
 
   -- setup pipes
-  local stdout = vim.loop.new_pipe(false)
-  local stderr = vim.loop.new_pipe(false)
+  job = {}
+  job.stdout = vim.loop.new_pipe(false)
+  job.stderr = vim.loop.new_pipe(false)
 
   -- callback when process completes
   local function on_exit()
-    stdout:read_stop()
-    stderr:read_stop()
-    safe_close(stdout)
-    safe_close(stderr)
     stop_job()
     cleanup()
   end
@@ -131,12 +139,12 @@ local function open_window(cmd_args)
   local cmd = table.remove(cmd_args, 1)
   local job_opts = {
     args = cmd_args,
-    stdio = {nil, stdout, stderr},
+    stdio = {nil, job.stdout, job.stderr},
   }
 
-  job_handle = vim.loop.spawn(cmd, job_opts, vim.schedule_wrap(on_exit))
-  vim.loop.read_start(stdout, vim.schedule_wrap(on_output))
-  vim.loop.read_start(stderr, vim.schedule_wrap(on_output))
+  job.handle = vim.loop.spawn(cmd, job_opts, vim.schedule_wrap(on_exit))
+  vim.loop.read_start(job.stdout, vim.schedule_wrap(on_output))
+  vim.loop.read_start(job.stderr, vim.schedule_wrap(on_output))
 
   if glow.config.pager then
     vim.cmd("startinsert")
