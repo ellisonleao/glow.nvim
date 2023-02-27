@@ -114,7 +114,7 @@ local function open_window(cmd_args)
   local function on_output(err, data)
     if err then
       -- what should we really do here?
-      print("[Glow Error] " .. vim.inspect(err))
+      vim.api.nvim_err_writeln("[Glow Error] " .. vim.inspect(err))
     end
     if data then
       local lines = vim.split(data, "\n")
