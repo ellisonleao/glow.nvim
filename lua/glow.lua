@@ -20,6 +20,10 @@ local function cleanup()
   end
 end
 
+local function err(msg)
+  vim.api.nvim_err_writeln(string.format("[glow] %s", msg))
+end
+
 local function safe_close(h)
   if not h:is_closing() then
     h:close()
@@ -39,7 +43,7 @@ local function stop_job()
     safe_close(job.stderr)
   end
   if not job.handle == nil then
-    safe_close(handle)
+    safe_close(job.handle)
   end
   job = nil
 end
@@ -53,7 +57,7 @@ end
 local function tmp_file()
   local output = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
   if vim.tbl_isempty(output) then
-    vim.notify("buffer is empty", vim.log.levels.ERROR)
+    err("buffer is empty")
     return
   end
   local tmp = vim.fn.tempname() .. ".md"
@@ -117,7 +121,7 @@ local function open_window(cmd_args)
       vim.api.nvim_err_writeln("[Glow Error] " .. vim.inspect(err))
     end
     if data then
-      local lines = vim.split(data, "\n")
+      local lines = vim.split(data, "\n", {})
       for _, d in ipairs(lines) do
         vim.api.nvim_chan_send(chan, d .. "\r\n")
       end
@@ -157,7 +161,7 @@ local function release_file_url()
 
   -- check pre-existence of required programs
   if vim.fn.executable("curl") == 0 or vim.fn.executable("tar") == 0 then
-    vim.notify("cURL and/or tar are required!", vim.log.levels.ERROR)
+    err("curl and/or tar are required")
     return
   end
 
@@ -183,7 +187,7 @@ local function release_file_url()
   arch = arch_patterns[raw_arch]
 
   if os == nil or arch == nil then
-    vim.notify("OS not supported", vim.log.levels.ERROR)
+    err("os not supported or could not be parsed")
     return ""
   end
 
@@ -213,12 +217,11 @@ local function execute(opts)
 
   -- check if glow binary is valid even if filled in config
   if vim.fn.executable(glow.config.glow_path) == 0 then
-    vim.notify(
+    err(
       string.format(
         "could not execute glow binary in path=%s . make sure you have the right config",
         glow.config.glow_path
-      ),
-      vim.log.levels.ERROR
+      )
     )
     return
   end
@@ -229,24 +232,24 @@ local function execute(opts)
     -- check file
     file = opts.fargs[1]
     if not vim.fn.filereadable(file) then
-      vim.notify("error on reading file", vim.log.levels.ERROR)
+      err("error on reading file")
       return
     end
 
     local ext = vim.fn.fnamemodify(file, ":e")
     if not is_md_ext(ext) then
-      vim.notify("preview only works on markdown files", vim.log.levels.ERROR)
+      err("preview only works on markdown files")
       return
     end
   else
     if not is_md_ft() then
-      vim.notify("preview only works on markdown files", vim.log.levels.ERROR)
+      err("preview only works on markdown files")
       return
     end
 
     file = tmp_file()
     if file == nil then
-      vim.notify("error on preview for current buffer", vim.log.levels.ERROR)
+      err("error on preview for current buffer")
       return
     end
     tmpfile = file
@@ -286,7 +289,7 @@ local function install_glow(opts)
   if vim.fn.filereadable(binary_path) == 1 then
     local success = vim.loop.fs_unlink(binary_path)
     if not success then
-      vim.notify("glow binary could not be removed!", vim.log.levels.ERROR)
+      err("glow binary could not be removed!")
       return
     end
   end
@@ -295,7 +298,7 @@ local function install_glow(opts)
   local callbacks = {
     on_sterr = vim.schedule_wrap(function(_, data, _)
       local out = table.concat(data, "\n")
-      vim.notify(out, vim.log.levels.ERROR)
+      err(out)
     end),
     on_exit = vim.schedule_wrap(function()
       vim.fn.system(extract_command)
@@ -303,7 +306,8 @@ local function install_glow(opts)
       if vim.fn.filereadable(output_filename) == 1 then
         local success = vim.loop.fs_unlink(output_filename)
         if not success then
-          return vim.notify("existing archive could not be removed!", vim.log.levels.ERROR)
+          err("existing archive could not be removed")
+          return
         end
       end
       glow.config.glow_path = binary_path
