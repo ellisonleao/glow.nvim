@@ -21,7 +21,7 @@ https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89
 
 ## Prerequisites
 
-- Neovim 0.7+
+- Neovim 0.8+
 
 ## Installing
 
