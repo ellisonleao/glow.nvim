@@ -328,7 +328,7 @@ end
 local function create_autocmds()
   vim.api.nvim_create_user_command("Glow", function(opts)
     glow.execute(opts)
-  end, { complete = "file", nargs = "*", bang = true })
+  end, { complete = "file", nargs = "?", bang = true })
 end
 
 glow.setup = function(params)
@@ -337,8 +337,8 @@ glow.setup = function(params)
 end
 
 glow.execute = function(opts)
-  if vim.version().minor < 7 then
-    vim.notify_once("glow.nvim: you must use neovim 0.7 or higher", vim.log.levels.ERROR)
+  if vim.version().minor < 8 then
+    vim.notify_once("glow.nvim: you must use neovim 0.8 or higher", vim.log.levels.ERROR)
     return
   end
 
