@@ -12,7 +12,8 @@ describe("setup", function()
       pager = false,
       width = 100,
       height = 100,
-      in_place = false,
+      default_type = "preview",
+      split_dir = "vsplit",
     }
     glow.setup()
     assert.are.same(glow.config, expected)
@@ -28,7 +29,8 @@ describe("setup", function()
       mouse = false,
       width = 200,
       height = 100,
-      in_place = true,
+      default_type = "keep",
+      split_dir = "split",
     }
     glow.setup(expected)
     assert.are.same(glow.config, expected)

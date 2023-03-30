@@ -1,5 +1,6 @@
-local win, buf, tmpfile
+local tmpfile
 local in_place_state = {}
+local types = { "preview", "keep", "split" }
 local job = {}
 local glow = {}
 
@@ -13,7 +14,8 @@ glow.config = {
   pager = false,
   width = 100,
   height = 100,
-  in_place = false,
+  default_type = types[1], -- one of preview, keep, split
+  split_dir = "vsplit"
 }
 
 local function cleanup()
@@ -53,15 +55,15 @@ end
 local function close_window()
   stop_job()
   cleanup()
-  if not glow.config.in_place then
-    vim.api.nvim_win_close(win, true)
+
+  local to_close_win = vim.fn.win_getid()
+  local managed = in_place_state[to_close_win]
+  in_place_state[to_close_win] = nil
+
+  if managed == true then -- Means it was a split window or a preview window so close it
+    vim.api.nvim_win_close(to_close_win, true)
   else
-    local to_close_win = vim.fn.win_getid()
-    local managed = in_place_state[to_close_win]
-    if managed then
-        vim.api.nvim_win_set_buf(to_close_win, managed[1])
-        in_place_state[to_close_win] = nil
-    end
+    vim.api.nvim_win_set_buf(to_close_win, managed[1]) -- restore previous buffer don't close
   end
 end
 
@@ -76,7 +78,7 @@ local function tmp_file()
   return tmp
 end
 
-local function open_window(cmd_args)
+local function open_window(cmd_args, type)
   local width = vim.o.columns
   local height = vim.o.lines
   local height_ratio = glow.config.height_ratio or 0.7
@@ -109,18 +111,28 @@ local function open_window(cmd_args)
   }
 
   -- create preview buffer and set local options
-  buf = vim.api.nvim_create_buf(false, true)
+  local buf = vim.api.nvim_create_buf(false, true)
 
-  if not glow.config.in_place then
-    win = vim.api.nvim_open_win(buf, true, win_opts)
-    vim.api.nvim_win_set_option(win, "winblend", 0)
+  if type == "split" then
+    vim.cmd(glow.config.split_dir)
+    local split_win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(split_win, buf)
+    in_place_state[split_win] = true
+    vim.api.nvim_win_set_option(split_win, "winblend", 0)
+
+  elseif type == "keep" then
+    local orig_win = vim.api.nvim_get_current_win()
+    -- local buf_in_place = vim.api.nvim_get_current_buf()
+    in_place_state[orig_win] = { vim.fn.bufnr(), buf }
+    vim.api.nvim_win_set_buf(orig_win, buf)
+
+  elseif type == "preview" then
+    local new_win = vim.api.nvim_open_win(buf, true, win_opts)
+    in_place_state[new_win] = true
+    vim.api.nvim_win_set_option(new_win, "winblend", 0)
   else
-    local win_in_place = vim.api.nvim_get_current_win()
-    local buf_in_place = vim.api.nvim_get_current_buf()
-
-    in_place_state[win_in_place] = { buf_in_place, buf }
-
-    vim.api.nvim_win_set_buf(win_in_place, buf)
+    err("Invalid type")
+    return
   end
 
   -- options
@@ -247,6 +259,13 @@ local function execute(opts)
     return
   end
 
+  -- Reorder arguments first is file|nil and second is preview|split|keep|nil
+  if vim.tbl_contains(types, opts.fargs[1]) then
+    local arg1 = opts.fargs[1] -- Save because line below will overwrite
+    opts.fargs[1] = opts.fargs[2] -- `Glow split` | `Glow split file.md` -> `nil` | `file.md`
+    opts.fargs[2] = arg1 -- Becomes preview|keep|split
+  end
+
   local filename = opts.fargs[1]
 
   if filename ~= nil and filename ~= "" then
@@ -285,7 +304,7 @@ local function execute(opts)
   end
 
   table.insert(cmd_args, file)
-  open_window(cmd_args)
+  open_window(cmd_args, opts.fargs[2] or glow.config.default_type)
 end
 
 local function install_glow(opts)
@@ -349,7 +368,7 @@ end
 local function create_autocmds()
   vim.api.nvim_create_user_command("Glow", function(opts)
     glow.execute(opts)
-  end, { complete = "file", nargs = "?", bang = true })
+  end, { complete = "file", nargs = "*", bang = true })
 end
 
 glow.setup = function(params)
@@ -363,8 +382,7 @@ glow.execute = function(opts)
     return
   end
 
-  local current_win = vim.fn.win_getid()
-  if ( current_win == win and not glow.config.in_place) or in_place_state[current_win] then
+  if in_place_state[vim.fn.win_getid()] then
     if opts.bang then
       close_window()
     end

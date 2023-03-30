@@ -60,7 +60,8 @@ The script comes with the following defaults:
   height = 100,
   width_ratio = 0.7, -- maximum width of the Glow window compared to the nvim window size (overrides `width`)
   height_ratio = 0.7,
-  in_place = false,
+  default_type = "preview|keep|split", -- default behaviour of output window
+  split_dir = "split|vsplit", -- default split direction
 }
 ```
 
@@ -81,15 +82,29 @@ require('glow').setup({
 })
 ```
 
+### Window types
+
+When you glow on a markdown buffer you can choose one of three possible window "options":
+
+- `preview`: open output in preview window
+- `keep`: open output in same window as input buffer
+- `split`: open window in a split (vertical or horizontal based on `opts.split_dir`
+
+
 ## Usage
 
 ### Preview file
 
 ```
-:Glow [path-to-md-file]
+:Glow [path-to-md-file] [window_type]
+:Glow [window_type] [path-to-md-file]
+
+:Glow split         -> render current file in split
+:Glow keep %        -> render current file in current window
+:Glow % preview     -> render current file in preview window
 ```
 
-### Preview current buffer
+### Preview current buffer with default window type
 
 ```
 :Glow
@@ -101,4 +116,4 @@ require('glow').setup({
 :Glow!
 ```
 
-You can also close the floating window or go back to the initial buffer using `q` or `<Esc>` keys
+You can also close the floating window / split or go back to the initial buffer using `q` or `<Esc>` keys
