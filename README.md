@@ -9,7 +9,7 @@
   </p>
   <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
   <img src="https://img.shields.io/github/actions/workflow/status/ellisonleao/glow.nvim/default.yml?style=for-the-badge" />
-  
+
 </div>
 
 https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89a2-0f286e3b6441.mp4
@@ -60,6 +60,7 @@ The script comes with the following defaults:
   height = 100,
   width_ratio = 0.7, -- maximum width of the Glow window compared to the nvim window size (overrides `width`)
   height_ratio = 0.7,
+  in_place = false,
 }
 ```
 
@@ -94,10 +95,10 @@ require('glow').setup({
 :Glow
 ```
 
-### Close window
+### Close window or return to input buffer
 
 ```
 :Glow!
 ```
 
-You can also close the floating window using `q` or `<Esc>` keys
+You can also close the floating window or go back to the initial buffer using `q` or `<Esc>` keys

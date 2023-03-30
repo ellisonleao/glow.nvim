@@ -1,4 +1,5 @@
 local win, buf, tmpfile
+local in_place_state = {}
 local job = {}
 local glow = {}
 
@@ -12,6 +13,7 @@ glow.config = {
   pager = false,
   width = 100,
   height = 100,
+  in_place = false,
 }
 
 local function cleanup()
@@ -51,7 +53,16 @@ end
 local function close_window()
   stop_job()
   cleanup()
-  vim.api.nvim_win_close(win, true)
+  if not glow.config.in_place then
+    vim.api.nvim_win_close(win, true)
+  else
+    local to_close_win = vim.fn.win_getid()
+    local managed = in_place_state[to_close_win]
+    if managed then
+        vim.api.nvim_win_set_buf(to_close_win, managed[1])
+        in_place_state[to_close_win] = nil
+    end
+  end
 end
 
 local function tmp_file()
@@ -99,10 +110,20 @@ local function open_window(cmd_args)
 
   -- create preview buffer and set local options
   buf = vim.api.nvim_create_buf(false, true)
-  win = vim.api.nvim_open_win(buf, true, win_opts)
+
+  if not glow.config.in_place then
+    win = vim.api.nvim_open_win(buf, true, win_opts)
+    vim.api.nvim_win_set_option(win, "winblend", 0)
+  else
+    local win_in_place = vim.api.nvim_get_current_win()
+    local buf_in_place = vim.api.nvim_get_current_buf()
+
+    in_place_state[win_in_place] = { buf_in_place, buf }
+
+    vim.api.nvim_win_set_buf(win_in_place, buf)
+  end
 
   -- options
-  vim.api.nvim_win_set_option(win, "winblend", 0)
   vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
   vim.api.nvim_buf_set_option(buf, "filetype", "glowpreview")
 
@@ -343,7 +364,7 @@ glow.execute = function(opts)
   end
 
   local current_win = vim.fn.win_getid()
-  if current_win == win then
+  if ( current_win == win and not glow.config.in_place) or in_place_state[current_win] then
     if opts.bang then
       close_window()
     end
