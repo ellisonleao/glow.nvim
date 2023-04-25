@@ -21,7 +21,7 @@ local function cleanup()
 end
 
 local function err(msg)
-  vim.api.nvim_err_writeln(string.format("[glow] %s", msg))
+  vim.notify(msg, vim.log.levels.ERROR, { title='glow' })
 end
 
 local function safe_close(h)
@@ -118,7 +118,7 @@ local function open_window(cmd_args)
   local function on_output(err, data)
     if err then
       -- what should we really do here?
-      vim.api.nvim_err_writeln("[Glow Error] " .. vim.inspect(err))
+      err(vim.inspect(err))
     end
     if data then
       local lines = vim.split(data, "\n", {})
