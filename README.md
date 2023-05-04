@@ -62,6 +62,8 @@ The script comes with the following defaults:
   height_ratio = 0.7,
   default_type = "preview|keep|split", -- default behaviour of output window
   split_dir = "split|vsplit", -- default split direction
+  winbar = true, -- enable winbar in Glow windows
+  winbar_text = "%#Error#%=GLOW%=" -- text in Glow winbar `:h 'statusline'`
 }
 ```
 

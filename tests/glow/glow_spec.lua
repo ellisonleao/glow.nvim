@@ -14,6 +14,8 @@ describe("setup", function()
       height = 100,
       default_type = "preview",
       split_dir = "vsplit",
+      winbar = true,
+      winbar_text = "%#Error#%=GLOW%="
     }
     glow.setup()
     assert.are.same(glow.config, expected)
@@ -31,6 +33,8 @@ describe("setup", function()
       height = 100,
       default_type = "keep",
       split_dir = "split",
+      winbar = false,
+      winbar_text = "test"
     }
     glow.setup(expected)
     assert.are.same(glow.config, expected)
