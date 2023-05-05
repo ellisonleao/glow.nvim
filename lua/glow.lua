@@ -21,7 +21,7 @@ local function cleanup()
 end
 
 local function err(msg)
-  vim.notify(msg, vim.log.levels.ERROR, { title='glow' })
+  vim.notify(msg, vim.log.levels.ERROR, { title = "glow" })
 end
 
 local function safe_close(h)
