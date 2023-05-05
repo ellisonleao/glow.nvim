@@ -17,7 +17,11 @@ glow.config = {
   default_type = types[1], -- one of preview, keep, split
   split_dir = "vsplit",
   winbar = true,
-  winbar_text = "%#Error#%=GLOW%=" -- `:h 'statusline'`
+  winbar_text = "%#Error#%=GLOW%=", -- `:h 'statusline'`
+  mappings = {
+    close = { "<Esc>", "q" }, -- to close Glow
+    toggle = { "p" } -- to toggle between input buffer and glow output in a Glow window
+  }
 }
 
 local function cleanup()
@@ -193,9 +197,12 @@ local function open_window(cmd_args, type)
   -- keymaps
   for _, b in ipairs({ copy_buf, buf }) do
     local keymaps_opts = { silent = true, buffer = b }
-    vim.keymap.set("n", "q", close_window, keymaps_opts)
-    vim.keymap.set("n", "<Esc>", close_window, keymaps_opts)
-    vim.keymap.set("n", "p", toggle, keymaps_opts)
+    dict = { toggle = toggle, close = close_window }
+    for group, fn in pairs(dict) do
+      for _, rhs in ipairs(glow.config.mappings[group]) do
+        vim.keymap.set("n", rhs, fn, keymaps_opts)
+      end
+    end
   end
 
   -- term to receive data

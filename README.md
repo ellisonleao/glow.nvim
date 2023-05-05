@@ -64,6 +64,10 @@ The script comes with the following defaults:
   split_dir = "split|vsplit", -- default split direction
   winbar = true, -- enable winbar in Glow windows
   winbar_text = "%#Error#%=GLOW%=" -- text in Glow winbar `:h 'statusline'`
+  mappings = { -- set up mappings for glow, multiple keys can do the same action
+     close = { "<Esc>", "q" }, -- to close Glow
+     toggle = { "p" } -- to toggle between input buffer and glow output in a Glow window
+  }
 }
 ```
 
