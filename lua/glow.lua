@@ -157,7 +157,7 @@ end
 
 local function release_file_url()
   local os, arch
-  local version = "1.5.0"
+  local version = "1.5.1"
 
   -- check pre-existence of required programs
   if vim.fn.executable("curl") == 0 or vim.fn.executable("tar") == 0 then
