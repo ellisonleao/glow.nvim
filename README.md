@@ -24,7 +24,7 @@ https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89
 
 [![LuaRocks](https://img.shields.io/luarocks/v/ellisonleao/glow.nvim?logo=lua&color=purple)](https://luarocks.org/modules/ellisonleao/glow.nvim)
 
-with [vim-plug](https://github.com/junegunn/vim-plug)
+- [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```
 Plug 'ellisonleao/glow.nvim'
@@ -33,13 +33,13 @@ require('glow').setup()
 EOF
 ```
 
-with [packer.nvim](https://github.com/wbthomason/packer.nvim)
+- [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {"ellisonleao/glow.nvim", config = function() require("glow").setup() end}
 ```
 
-with [lazy.nvim](https://github.com/folke/lazy.nvim)
+- [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {"ellisonleao/glow.nvim", config = true, cmd = "Glow"}
