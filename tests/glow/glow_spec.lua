@@ -8,7 +8,6 @@ describe("setup", function()
       install_path = vim.env.HOME .. "/.local/bin",
       border = "shadow",
       style = vim.o.background,
-      mouse = false,
       pager = false,
       width = 100,
       height = 100,
@@ -24,7 +23,6 @@ describe("setup", function()
       border = "shadow",
       style = "dark",
       pager = true,
-      mouse = false,
       width = 200,
       height = 100,
     }
