@@ -1,18 +1,42 @@
-local win, buf, tmpfile
+---@type integer win id
+local win
+
+---@type integer buffer id
+local buf
+
+---@type string tmp file path
+local tmpfile
+
 local job = {}
+
+-- types
+---@alias border 'shadow' | 'none' | 'double' | 'rounded' | 'solid' | 'single' | 'rounded'
+---@alias style 'dark' | 'light'
+
+---@class Glow
 local glow = {}
 
--- default configs
-glow.config = {
+---@class Config
+---@field glow_path string glow executable path
+---@field install_path string glow binary installation path
+---@field border border floating window border style
+---@field style style floating window style
+---@field pager boolean display output in pager style
+---@field width integer floating window width
+---@field height integer floating window height
+-- default configurations
+local config = {
   glow_path = vim.fn.exepath("glow"),
   install_path = vim.env.HOME .. "/.local/bin",
   border = "shadow",
   style = vim.o.background,
-  mouse = false,
   pager = false,
   width = 100,
   height = 100,
 }
+
+-- default configs
+glow.config = config
 
 local function cleanup()
   if tmpfile ~= nil then
@@ -54,17 +78,19 @@ local function close_window()
   vim.api.nvim_win_close(win, true)
 end
 
+---@return string
 local function tmp_file()
   local output = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
   if vim.tbl_isempty(output) then
     err("buffer is empty")
-    return
+    return ""
   end
   local tmp = vim.fn.tempname() .. ".md"
   vim.fn.writefile(output, tmp)
   return tmp
 end
 
+---@param cmd_args table glow command arguments
 local function open_window(cmd_args)
   local width = vim.o.columns
   local height = vim.o.lines
@@ -155,6 +181,7 @@ local function open_window(cmd_args)
   end
 end
 
+---@return string
 local function release_file_url()
   local os, arch
   local version = "1.5.0"
@@ -162,7 +189,7 @@ local function release_file_url()
   -- check pre-existence of required programs
   if vim.fn.executable("curl") == 0 or vim.fn.executable("tar") == 0 then
     err("curl and/or tar are required")
-    return
+    return ""
   end
 
   -- local raw_os = jit.os
@@ -196,6 +223,7 @@ local function release_file_url()
   return "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
 end
 
+---@return boolean
 local function is_md_ft()
   local allowed_fts = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki", "telekasten" }
   if not vim.tbl_contains(allowed_fts, vim.bo.filetype) then
@@ -204,6 +232,7 @@ local function is_md_ft()
   return true
 end
 
+---@return boolean
 local function is_md_ext(ext)
   local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" }
   if not vim.tbl_contains(allowed_exts, string.lower(ext)) then
@@ -212,7 +241,7 @@ local function is_md_ext(ext)
   return true
 end
 
-local function execute(opts)
+local function run(opts)
   local file
 
   -- check if glow binary is valid even if filled in config
@@ -311,12 +340,13 @@ local function install_glow(opts)
         end
       end
       glow.config.glow_path = binary_path
-      execute(opts)
+      run(opts)
     end),
   }
   vim.fn.jobstart(download_command, callbacks)
 end
 
+---@return string
 local function get_executable()
   if glow.config.glow_path ~= "" then
     return glow.config.glow_path
@@ -331,6 +361,7 @@ local function create_autocmds()
   end, { complete = "file", nargs = "?", bang = true })
 end
 
+---@param params Config? custom config
 glow.setup = function(params)
   glow.config = vim.tbl_extend("force", {}, glow.config, params or {})
   create_autocmds()
@@ -356,7 +387,7 @@ glow.execute = function(opts)
     return
   end
 
-  execute(opts)
+  run(opts)
 end
 
 return glow
