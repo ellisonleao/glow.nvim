@@ -1,9 +1,3 @@
----@type integer win id
-local win
-
----@type integer buffer id
-local buf
-
 ---@type string tmp file path
 local tmpfile
 
@@ -50,8 +44,8 @@ local config = {
   winbar_text = "%#Error#%=GLOW%=", -- `:h 'statusline'`
   mappings = {
     close = { "<Esc>", "q" }, -- to close Glow
-    toggle = { "p" } -- to toggle between input buffer and glow output in a Glow window
-  }
+    toggle = { "p" }, -- to toggle between input buffer and glow output in a Glow window
+  },
 }
 
 -- default configs
@@ -93,6 +87,7 @@ end
 
 local function close_window()
   local to_close_win = vim.fn.win_getid()
+  if not to_close_win then return end
   local managed = in_place_state[to_close_win]
   -- Exit if trying to close from original buffer's window when in preview or split mode
   if not managed then return end
@@ -110,8 +105,8 @@ local function close_window()
   end
 
   -- Completely remove glow output and input copy from buffer list
-  pcall(vim.cmd, "silent bwipe! " .. managed.output)
-  pcall(vim.cmd, "silent bwipe! " .. managed.copy)
+  pcall(vim.cmd.silent, "bwipe! " .. managed.output)
+  pcall(vim.cmd.silent, "bwipe! " .. managed.copy)
 end
 
 ---@return string
@@ -128,6 +123,7 @@ end
 
 local function toggle()
   local curr_win = vim.fn.win_getid()
+  if not curr_win then return end
   local curr_buf = vim.fn.bufnr()
   local state = in_place_state[curr_win]
   -- Don't try to toggle from original buffer's window if in preview or split mode
@@ -147,7 +143,7 @@ local function set_state(win, type, input_buf, input_win, copy, glow_buf)
     input = input_buf,
     copy = copy,
     output = glow_buf,
-    old_winbar = vim.api.nvim_win_get_option(input_win, "winbar")
+    old_winbar = vim.api.nvim_win_get_option(input_win, "winbar"),
   }
 end
 
@@ -209,12 +205,10 @@ local function open_window(cmd_args, type)
     vim.api.nvim_win_set_buf(split_win, buf)
     set_state(split_win, type, orig_buf, orig_win, copy_buf, buf)
     vim.api.nvim_win_set_option(split_win, "winblend", 0)
-
   elseif type == "keep" then
-    local orig_win = vim.api.nvim_get_current_win()
+    orig_win = vim.api.nvim_get_current_win()
     set_state(orig_win, type, orig_buf, orig_win, copy_buf, buf)
     vim.api.nvim_win_set_buf(orig_win, buf)
-
   elseif type == "preview" then
     local new_win = vim.api.nvim_open_win(buf, true, win_opts)
     set_state(new_win, type, orig_buf, orig_win, copy_buf, buf)
@@ -233,7 +227,7 @@ local function open_window(cmd_args, type)
   -- keymaps
   for _, b in ipairs({ copy_buf, buf }) do
     local keymaps_opts = { silent = true, buffer = b }
-    dict = { toggle = toggle, close = close_window }
+    local dict = { toggle = toggle, close = close_window }
     for group, fn in pairs(dict) do
       for _, rhs in ipairs(glow.config.mappings[group]) do
         vim.keymap.set("n", rhs, fn, keymaps_opts)
@@ -245,10 +239,10 @@ local function open_window(cmd_args, type)
   local chan = vim.api.nvim_open_term(buf, {})
 
   -- callback for handling output from process
-  local function on_output(err, data)
-    if err then
+  local function on_output(e, data)
+    if e then
       -- what should we really do here?
-      err(vim.inspect(err))
+      err(vim.inspect(e))
     end
     if data then
       local lines = vim.split(data, "\n", {})
