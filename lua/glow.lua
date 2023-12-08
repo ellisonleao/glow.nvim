@@ -198,7 +198,7 @@ local function release_file_url()
   local os_patterns = {
     ["Windows"] = "Windows",
     ["Windows_NT"] = "Windows",
-    ["Linux"] = "linux",
+    ["Linux"] = "Linux",
     ["Darwin"] = "Darwin",
     ["BSD"] = "freebsd",
   }
@@ -218,8 +218,8 @@ local function release_file_url()
     return ""
   end
 
-  -- create the url, filename based on os, arch, version
-  local filename = "glow_" .. version .. "_" .. os .. "_" .. arch .. (os == "Windows" and ".zip" or ".tar.gz")
+  -- create the url, filename based on os and arch
+  local filename = "glow_" .. os .. "_" .. arch .. (os == "Windows" and ".zip" or ".tar.gz")
   return "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
 end
 
