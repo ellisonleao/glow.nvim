@@ -200,7 +200,7 @@ local function release_file_url()
     ["Windows_NT"] = "Windows",
     ["Linux"] = "Linux",
     ["Darwin"] = "Darwin",
-    ["BSD"] = "freebsd",
+    ["BSD"] = "Freebsd",
   }
 
   local arch_patterns = {
