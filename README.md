@@ -9,7 +9,7 @@
   </p>
   <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
   <img src="https://img.shields.io/github/actions/workflow/status/ellisonleao/glow.nvim/default.yml?style=for-the-badge" />
-  
+
 </div>
 
 https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89a2-0f286e3b6441.mp4
@@ -60,6 +60,14 @@ The script comes with the following defaults:
   height = 100,
   width_ratio = 0.7, -- maximum width of the Glow window compared to the nvim window size (overrides `width`)
   height_ratio = 0.7,
+  default_type = "preview|keep|split", -- default behaviour of output window
+  split_dir = "split|vsplit", -- default split direction
+  winbar = true, -- enable winbar in Glow windows
+  winbar_text = "%#Error#%=GLOW%=" -- text in Glow winbar `:h 'statusline'`
+  mappings = { -- set up mappings for glow, multiple keys can do the same action
+     close = { "<Esc>", "q" }, -- to close Glow
+     toggle = { "p" } -- to toggle between input buffer and glow output in a Glow window
+  }
 }
 ```
 
@@ -80,24 +88,38 @@ require('glow').setup({
 })
 ```
 
+### Window types
+
+When you glow on a markdown buffer you can choose one of three possible window "options":
+
+- `preview`: open output in preview window
+- `keep`: open output in same window as input buffer
+- `split`: open window in a split (vertical or horizontal based on `opts.split_dir`
+
+
 ## Usage
 
 ### Preview file
 
 ```
-:Glow [path-to-md-file]
+:Glow [path-to-md-file] [window_type]
+:Glow [window_type] [path-to-md-file]
+
+:Glow split         -> render current file in split
+:Glow keep %        -> render current file in current window
+:Glow % preview     -> render current file in preview window
 ```
 
-### Preview current buffer
+### Preview current buffer with default window type
 
 ```
 :Glow
 ```
 
-### Close window
+### Close window or return to input buffer
 
 ```
 :Glow!
 ```
 
-You can also close the floating window using `q` or `<Esc>` keys
+You can also close the floating window / split or go back to the initial buffer using `q` or `<Esc>` keys
