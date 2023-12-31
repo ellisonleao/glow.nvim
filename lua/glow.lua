@@ -79,8 +79,8 @@ local function close_window()
 end
 
 ---@return string
-local function tmp_file()
-  local output = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
+local function tmp_file(opts)
+  local output = vim.api.nvim_buf_get_lines(0, opts.line1 - 1, opts.line2, false)
   if vim.tbl_isempty(output) then
     err("buffer is empty")
     return ""
@@ -276,7 +276,7 @@ local function run(opts)
       return
     end
 
-    file = tmp_file()
+    file = tmp_file(opts)
     if file == nil then
       err("error on preview for current buffer")
       return
@@ -358,7 +358,7 @@ end
 local function create_autocmds()
   vim.api.nvim_create_user_command("Glow", function(opts)
     glow.execute(opts)
-  end, { complete = "file", nargs = "?", bang = true })
+  end, { complete = "file", nargs = "?", bang = true, range="%" })
 end
 
 ---@param params Config? custom config
