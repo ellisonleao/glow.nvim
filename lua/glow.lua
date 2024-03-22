@@ -24,6 +24,7 @@ local glow = {}
 ---@field pager boolean display output in pager style
 ---@field width integer floating window width
 ---@field height integer floating window height
+---@field background string? floating window background color
 -- default configurations
 local config = {
   glow_path = vim.fn.exepath("glow"),
@@ -33,6 +34,7 @@ local config = {
   pager = false,
   width = 100,
   height = 100,
+  background = nil
 }
 
 -- default configs
@@ -126,11 +128,15 @@ local function open_window(cmd_args)
   -- create preview buffer and set local options
   buf = vim.api.nvim_create_buf(false, true)
   win = vim.api.nvim_open_win(buf, true, win_opts)
-
+  local nsid = vim.api.nvim_create_namespace("glow")
+  vim.api.nvim_win_set_hl_ns(win, nsid)
   -- options
-  vim.api.nvim_win_set_option(win, "winblend", 0)
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "filetype", "glowpreview")
+  vim.wo[win].winblend = 0
+  vim.bo[buf].bufhidden = "wipe"
+  vim.bo[buf].filetype = "glowpreview"
+  if glow.config.background then
+    vim.api.nvim_set_hl(nsid, "NormalFloat", {bg=glow.config.background})
+  end
 
   -- keymaps
   local keymaps_opts = { silent = true, buffer = buf }
