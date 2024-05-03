@@ -11,6 +11,10 @@ describe("setup", function()
       pager = false,
       width = 100,
       height = 100,
+      filetypes = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki", "telekasten" },
+      extra_filetypes = {},
+      extensions = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" },
+      extra_extensions = {},
     }
     glow.setup()
     assert.are.same(glow.config, expected)
@@ -25,6 +29,10 @@ describe("setup", function()
       pager = true,
       width = 200,
       height = 100,
+      filetypes = { "markdown", "markdown.pandoc" },
+      extra_filetypes = { "wiki" },
+      extensions = { "md", "markdown", "mkd", "mkdn" },
+      extra_extensions = { "mdtext" },
     }
     glow.setup(expected)
     assert.are.same(glow.config, expected)

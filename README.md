@@ -9,10 +9,10 @@
   </p>
   <img src="https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua" />
   <img src="https://img.shields.io/github/actions/workflow/status/ellisonleao/glow.nvim/default.yml?style=for-the-badge" />
-  
+
 </div>
 
-https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89a2-0f286e3b6441.mp4
+<https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89a2-0f286e3b6441.mp4>
 
 **Breaking changes are now moved to a fixed topic in Discussions. [Click here](https://github.com/ellisonleao/glow.nvim/discussions/77) to see them**
 
@@ -60,6 +60,10 @@ The script comes with the following defaults:
   height = 100,
   width_ratio = 0.7, -- maximum width of the Glow window compared to the nvim window size (overrides `width`)
   height_ratio = 0.7,
+  filetypes = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki", "telekasten" },
+  extra_filetypes = {},
+  extensions = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" },
+  extra_extensions = {},
 }
 ```
 
