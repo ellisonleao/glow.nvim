@@ -181,7 +181,7 @@ local function open_window(cmd_args)
   end
 end
 
----@return string
+---@return string, string
 local function release_file_url()
   local os, arch
   local version = "1.5.1"
@@ -189,7 +189,7 @@ local function release_file_url()
   -- check pre-existence of required programs
   if vim.fn.executable("curl") == 0 or vim.fn.executable("tar") == 0 then
     err("curl and/or tar are required")
-    return ""
+    return "", ""
   end
 
   -- local raw_os = jit.os
@@ -215,12 +215,12 @@ local function release_file_url()
 
   if os == nil or arch == nil then
     err("os not supported or could not be parsed")
-    return ""
+    return "", ""
   end
 
   -- create the url, filename based on os and arch
   local filename = "glow_" .. os .. "_" .. arch .. (os == "Windows" and ".zip" or ".tar.gz")
-  return "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename
+  return "https://github.com/charmbracelet/glow/releases/download/v" .. version .. "/" .. filename, os
 end
 
 ---@return boolean
@@ -296,16 +296,44 @@ local function run(opts)
   open_window(cmd_args)
 end
 
-local function install_glow(opts)
-  local release_url = release_file_url()
+---Installation process using `go install` command
+---@param opts table
+local function go_install_glow(opts)
+  if vim.fn.exepath("go") == "" then
+    return
+  end
+
+  local download_command = { "go", "install", "github.com/charmbracelet/glow@latest" }
+
+  local callbacks = {
+    on_sterr = vim.schedule_wrap(function(_, data, _)
+      local out = table.concat(data, "\n")
+      err(out)
+    end),
+    on_exit = vim.schedule_wrap(function()
+      vim.notify("go install github.com/charmbracelet/glow@latest completed", vim.log.levels.INFO, { title = "Glow" })
+      glow.config.glow_path = vim.fn.exepath("glow")
+      run(opts)
+    end),
+  }
+  vim.fn.jobstart(download_command, callbacks)
+end
+
+---Installation process independent from `go` command and knowledgeable of the OS
+---@param opts table
+local function agnostic_install_glow(opts)
+  local release_url, os = release_file_url()
   if release_url == "" then
     return
   end
 
   local install_path = glow.config.install_path
-  local download_command = { "curl", "-sL", "-o", "glow.tar.gz", release_url }
-  local extract_command = { "tar", "-zxf", "glow.tar.gz", "-C", install_path }
-  local output_filename = "glow.tar.gz"
+  local output_filename = (os == "Windows" and "glow.zip" or "glow.tar.gz")
+  local download_command = { "curl", "-sL", "-o", output_filename, release_url }
+  local extract_command = (
+    os == "Windows" and { "Expand-Archive", output_filename, install_path }
+    or { "tar", "-zxf", output_filename, "-C", install_path }
+  )
   ---@diagnostic disable-next-line: missing-parameter
   local binary_path = vim.fn.expand(table.concat({ install_path, "glow" }, "/"))
 
@@ -344,6 +372,13 @@ local function install_glow(opts)
     end),
   }
   vim.fn.jobstart(download_command, callbacks)
+end
+
+local function install_glow(opts)
+  if vim.fn.exepath("go") ~= "" then
+    go_install_glow(opts)
+  end
+  agnostic_install_glow(opts)
 end
 
 ---@return string
