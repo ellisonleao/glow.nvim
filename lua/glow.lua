@@ -24,6 +24,10 @@ local glow = {}
 ---@field pager boolean display output in pager style
 ---@field width integer floating window width
 ---@field height integer floating window height
+---@field filetypes string[] allowed filetypes
+---@field extra_filetypes string[]|nil aditional filetypes
+---@field extensions string[] allowed extensions
+---@field extra_extensions string[]|nil aditional extensions
 -- default configurations
 local config = {
   glow_path = vim.fn.exepath("glow"),
@@ -33,6 +37,10 @@ local config = {
   pager = false,
   width = 100,
   height = 100,
+  filetypes = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki", "telekasten" },
+  extra_filetypes = {},
+  extensions = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" },
+  extra_extensions = {},
 }
 
 -- default configs
@@ -225,7 +233,7 @@ end
 
 ---@return boolean
 local function is_md_ft()
-  local allowed_fts = { "markdown", "markdown.pandoc", "markdown.gfm", "wiki", "vimwiki", "telekasten" }
+  local allowed_fts = vim.tbl_deep_extend("force", {}, glow.config.filetypes, glow.config.extra_filetypes or {})
   if not vim.tbl_contains(allowed_fts, vim.bo.filetype) then
     return false
   end
@@ -234,7 +242,7 @@ end
 
 ---@return boolean
 local function is_md_ext(ext)
-  local allowed_exts = { "md", "markdown", "mkd", "mkdn", "mdwn", "mdown", "mdtxt", "mdtext", "rmd", "wiki" }
+  local allowed_exts = vim.tbl_deep_extend("force", {}, glow.config.extensions, glow.config.extra_extensions or {})
   if not vim.tbl_contains(allowed_exts, string.lower(ext)) then
     return false
   end
