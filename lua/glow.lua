@@ -10,27 +10,20 @@ local tmpfile
 local job = {}
 
 -- types
----@alias border_opts 'shadow' | 'none' | 'double' | 'rounded' | 'solid' | 'single' | 'rounded'
----@alias style_opts 'dark' | 'light'
+---@alias border 'shadow' | 'none' | 'double' | 'rounded' | 'solid' | 'single' | 'rounded'
+---@alias style 'dark' | 'light'
 
 ---@class Glow
----@field config GlowConfig
----@field setup function: sets up the configuration for `glow.nvim`
----@field execute function: executes `glow` in case that all checks are ok
 local glow = {}
 
----@class GlowConfig
+---@class Config
 ---@field glow_path string glow executable path
 ---@field install_path string glow binary installation path
----@field border border_opts floating window border style
----@field style style_opts floating window style
+---@field border border floating window border style
+---@field style style floating window style
 ---@field pager boolean display output in pager style
 ---@field width integer floating window width
 ---@field height integer floating window height
----@field width_ratio float|nil floating window width ratio
----@field height_ratio float|nil floating window height ratio
-
----@type GlowConfig
 -- default configurations
 local config = {
   glow_path = vim.fn.exepath("glow"),
@@ -368,7 +361,7 @@ local function create_autocmds()
   end, { complete = "file", nargs = "?", bang = true })
 end
 
----@param params GlowConfig? custom config
+---@param params Config? custom config
 glow.setup = function(params)
   glow.config = vim.tbl_extend("force", {}, glow.config, params or {})
   create_autocmds()
