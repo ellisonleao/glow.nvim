@@ -128,9 +128,15 @@ local function open_window(cmd_args)
   win = vim.api.nvim_open_win(buf, true, win_opts)
 
   -- options
-  vim.api.nvim_win_set_option(win, "winblend", 0)
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "filetype", "glowpreview")
+  if vim.version().minor >= 10 then
+    vim.api.nvim_set_option_value("winblend", 0, { win = win })
+    vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+    vim.api.nvim_set_option_value("filetype", "glowpreview", { buf = buf })
+  else
+    vim.api.nvim_win_set_option(win, "winblend", 0)
+    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+    vim.api.nvim_buf_set_option(buf, "filetype", "glowpreview")
+  end
 
   -- keymaps
   local keymaps_opts = { silent = true, buffer = buf }
