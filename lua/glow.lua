@@ -129,9 +129,9 @@ local function open_window(cmd_args)
 
   -- options
   if vim.version().minor >= 10 then
-    vim.api.nvim_set_option_value("winblend", 0, { scope = "local", win = win })
-    vim.api.nvim_set_option_value("bufhidden", "wipe", { scope = "local", buf = buf })
-    vim.api.nvim_set_option_value("filetype", "glowpreview", { scope = "local", buf = buf })
+    vim.api.nvim_set_option_value("winblend", 0, { win = win })
+    vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+    vim.api.nvim_set_option_value("filetype", "glowpreview", { buf = buf })
   else
     vim.api.nvim_win_set_option(win, "winblend", 0)
     vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
