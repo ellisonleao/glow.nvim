@@ -124,6 +124,7 @@ local function open_window(cmd_args)
   }
 
   if glow.config.vertical then
+    vim.cmd("vsplit")
     win_opts.vertical = true
   else
     win_opts.relative = "editor"
