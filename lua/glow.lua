@@ -21,6 +21,7 @@ local glow = {}
 ---@field install_path string glow binary installation path
 ---@field border border floating window border style
 ---@field style style floating window style
+---@field vertical boolean Whether preview should open in vertical split or not
 ---@field pager boolean display output in pager style
 ---@field width integer floating window width
 ---@field height integer floating window height
@@ -115,13 +116,18 @@ local function open_window(cmd_args)
 
   local win_opts = {
     style = "minimal",
-    relative = "editor",
     width = win_width,
     height = win_height,
     row = row,
     col = col,
     border = glow.config.border,
   }
+
+  if glow.config.vertical then
+    win_opts.vertical = true
+  else
+    win_opts.relative = "editor"
+  end
 
   -- create preview buffer and set local options
   buf = vim.api.nvim_create_buf(false, true)
