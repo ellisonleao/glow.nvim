@@ -21,10 +21,10 @@ local glow = {}
 ---@field install_path string glow binary installation path
 ---@field border border floating window border style
 ---@field style style floating window style
----@field vertical boolean Whether preview should open in vertical split or not
 ---@field pager boolean display output in pager style
 ---@field width integer floating window width
 ---@field height integer floating window height
+---@field vertical boolean open window in vertical split mode
 -- default configurations
 local config = {
   glow_path = vim.fn.exepath("glow"),
@@ -34,6 +34,7 @@ local config = {
   pager = false,
   width = 100,
   height = 100,
+  vertical = false,
 }
 
 -- default configs
@@ -116,6 +117,7 @@ local function open_window(cmd_args)
 
   local win_opts = {
     style = "minimal",
+    relative = "editor",
     width = win_width,
     height = win_height,
     row = row,
@@ -125,14 +127,14 @@ local function open_window(cmd_args)
 
   if glow.config.vertical then
     vim.cmd("vsplit")
-    win_opts.vertical = true
+    win = vim.api.nvim_get_current_win()
+    buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_win_set_buf(win, buf)
   else
-    win_opts.relative = "editor"
+    -- create preview buffer and set local options
+    buf = vim.api.nvim_create_buf(false, true)
+    win = vim.api.nvim_open_win(buf, true, win_opts)
   end
-
-  -- create preview buffer and set local options
-  buf = vim.api.nvim_create_buf(false, true)
-  win = vim.api.nvim_open_win(buf, true, win_opts)
 
   -- options
   vim.api.nvim_win_set_option(win, "winblend", 0)
