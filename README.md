@@ -1,3 +1,9 @@
+## Project is now archived!
+
+No more bugfixes or new features are going to be created. If you want to get a nice markdown previewer that is being maintained, please try https://github.com/MeanderingProgrammer/render-markdown.nvim.
+
+<hr/>
+
 <h1 align="center">
   <img src="https://i.postimg.cc/Y9Z030zC/glow-nvim.jpg" />
 </h1>
