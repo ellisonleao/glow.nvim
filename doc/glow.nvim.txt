@@ -1,12 +1,21 @@
-*glow.nvim.txt*        For Neovim >= 0.8.0       Last change: 2023 December 23
+*glow.nvim.txt*         For Neovim >= 0.8.0         Last change: 2025 March 21
 
 ==============================================================================
 Table of Contents                                *glow.nvim-table-of-contents*
 
+  - Project is now archived!              |glow.nvim-project-is-now-archived!|
   - Prerequisites                                    |glow.nvim-prerequisites|
   - Installing                                          |glow.nvim-installing|
   - Setup                                                    |glow.nvim-setup|
   - Usage                                                    |glow.nvim-usage|
+1. Links                                                     |glow.nvim-links|
+
+PROJECT IS NOW ARCHIVED!                  *glow.nvim-project-is-now-archived!*
+
+No more bugfixes or new features are going to be created. If you want to get a
+nice markdown previewer that is being maintained, please try
+https://github.com/MeanderingProgrammer/render-markdown.nvim.
+
 
 
 https://user-images.githubusercontent.com/178641/215353259-eb8688fb-5600-4b95-89a2-0f286e3b6441.mp4
